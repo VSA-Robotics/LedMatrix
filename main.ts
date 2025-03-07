@@ -30,7 +30,7 @@ namespace LedMatrix {
         [key: string]: number[];
     }
 
-    // Font definition for A-Z, 0-9, and symbols (5 columns per character, 5 rows high)
+    // Font definition for A-Z, 0-9, and symbols (5 rows per character)
     const font: FontMap = {
         'A': [0b01110, 0b10001, 0b11111, 0b10001, 0b10001],
         'B': [0b11110, 0b10001, 0b11110, 0b10001, 0b11110],
