@@ -145,6 +145,20 @@ namespace LedMatrix {
         showRows(matrixBuffer);
     }
 
+    // Helper functions for font orientation
+    function flipVertical(pattern: number): number {
+        let reversed = 0;
+        for (let i = 0; i < 8; i++) {
+            reversed = (reversed << 1) | (pattern & 1);
+            pattern >>= 1;
+        }
+        return reversed;
+    }
+
+    function flipHorizontal(charFont: number[]): number[] {
+        return charFont.slice().reverse();
+    }
+
     // Exported block functions
     /**
      * Initialize the LED matrix with specified SCK and DIN pins.
@@ -178,12 +192,11 @@ namespace LedMatrix {
         if (row < 0 || row >= 8 || col < 0 || col >= 16) {
             return; // Silent fail
         }
-        const hardwareRow = col; // Map column to hardware row
-        const hardwareCol = row; // Map row to hardware column
+        // Corrected mapping: row to hardware row, col to hardware column
         if (state) {
-            matrixBuffer[hardwareCol] |= (1 << hardwareRow);
+            matrixBuffer[col] |= (1 << row);
         } else {
-            matrixBuffer[hardwareCol] &= ~(1 << hardwareRow);
+            matrixBuffer[col] &= ~(1 << row);
         }
         updateDisplay();
     }
@@ -287,7 +300,9 @@ namespace LedMatrix {
         for (let i = 0; i < 16; i++) bitmap.push(0); // Initial padding
         for (let char of text.toUpperCase()) {
             if (font[char]) {
-                bitmap = bitmap.concat(font[char]);
+                for (let colPattern of font[char]) {
+                    bitmap.push(flipVertical(colPattern)); // Flip vertically to correct upside-down letters
+                }
             } else {
                 bitmap = bitmap.concat(font[' ']); // Default to space if undefined
             }
