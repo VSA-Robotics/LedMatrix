@@ -25,8 +25,13 @@ namespace LedMatrix {
         matrixBuffer.push(0); // Initialize 16-column buffer for 8x16 matrix
     }
 
+    // Define the font type to allow indexing by string
+    interface FontMap {
+        [key: string]: number[];
+    }
+
     // Font definition for A-Z, 0-9, ?, !, % (5 columns per character, 8 rows high)
-    const font: { [key: string]: number[] } = {
+    const font: FontMap = {
         'A': [0x1C, 0x22, 0x3E, 0x22, 0x22],
         'B': [0x3C, 0x22, 0x3C, 0x22, 0x3C],
         'C': [0x1C, 0x22, 0x20, 0x22, 0x1C],
@@ -299,7 +304,7 @@ namespace LedMatrix {
             matrixBuffer[c] = (msgCol >= 0 && msgCol < bitmap.length) ? bitmap[msgCol] : 0;
             // Debug: Check the first column
             if (c === 0 && msgCol >= 0 && msgCol < bitmap.length) {
-                console.log("First column data: " + bitmap[msgCol].toString(2));
+                console.log("First column data: " + bitmap[msgCol].toString(2).padStart(8, '0'));
             }
         }
         updateDisplay();
