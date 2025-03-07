@@ -31,10 +31,10 @@ namespace LedMatrix {
     }
 
     // Font definition for A-Z, 0-9, ?, !, % (5 columns per character, 8 rows high)
-    const font: FontMap = {
-    'A': [0b01110, 0b10001, 0b11111, 0b10001, 0b10001],
-    'B': [0b11110, 0b10001, 0b11110, 0b10001, 0b11110],
-    'C': [0b01110, 0b10001, 0b10000, 0b10001, 0b01110],
+    const font = {
+    'A': [0b01110, 0b10001, 0b11111, 0b10001, 0b10001], // A
+    'B': [0b11110, 0b10001, 0b11110, 0b10001, 0b11110], // B
+    'C': [0b01110, 0b10001, 0b10000, 0b10001, 0b01110], // C
     'D': [0b11100, 0b10010, 0b10001, 0b10010, 0b11100],
     'E': [0b11111, 0b10000, 0b11110, 0b10000, 0b11111],
     'F': [0b11111, 0b10000, 0b11110, 0b10000, 0b10000],
@@ -59,7 +59,6 @@ namespace LedMatrix {
     'Y': [0b10001, 0b01010, 0b00100, 0b00100, 0b00100],
     'Z': [0b11111, 0b00010, 0b00100, 0b01000, 0b11111]
 };
-
     // Low-level communication functions
     function sendBit(bit: number) {
         pins.digitalWritePin(sckPin, 0);
