@@ -22,7 +22,7 @@ namespace LedMatrix {
     let dinPin: DigitalPin;
     let matrixBuffer: number[] = [];
     for (let i = 0; i < 16; i++) {
-        matrixBuffer.push(0); // Initialize 16 bytes for 8 rows (2 bytes per row)
+        matrixBuffer.push(0); // Initialize 16-column buffer for 8x16 matrix
     }
 
     // Define the font type to allow indexing by string
@@ -30,50 +30,48 @@ namespace LedMatrix {
         [key: string]: number[];
     }
 
-    // Font definition for A-Z, 0-9, and symbols (5 rows per character)
+    // Font definition for A-Z, 0-9, ?, !, % (5 columns per character, 8 rows high)
     const font: FontMap = {
-        'A': [0b01110, 0b10001, 0b11111, 0b10001, 0b10001],
-        'B': [0b11110, 0b10001, 0b11110, 0b10001, 0b11110],
-        'C': [0b01110, 0b10001, 0b10000, 0b10001, 0b01110],
-        'D': [0b11100, 0b10010, 0b10001, 0b10010, 0b11100],
-        'E': [0b11111, 0b10000, 0b11110, 0b10000, 0b11111],
-        'F': [0b11111, 0b10000, 0b11110, 0b10000, 0b10000],
-        'G': [0b01110, 0b10001, 0b10000, 0b10011, 0b01110],
-        'H': [0b10001, 0b10001, 0b11111, 0b10001, 0b10001],
-        'I': [0b01110, 0b00100, 0b00100, 0b00100, 0b01110],
-        'J': [0b00010, 0b00010, 0b00010, 0b10010, 0b01100],
-        'K': [0b10001, 0b10010, 0b10100, 0b11000, 0b10001],
-        'L': [0b10000, 0b10000, 0b10000, 0b10000, 0b11111],
-        'M': [0b10001, 0b11011, 0b10101, 0b10001, 0b10001],
-        'N': [0b10001, 0b11001, 0b10101, 0b10011, 0b10001],
-        'O': [0b01110, 0b10001, 0b10001, 0b10001, 0b01110],
-        'P': [0b11110, 0b10001, 0b11110, 0b10000, 0b10000],
-        'Q': [0b01110, 0b10001, 0b10001, 0b10011, 0b01101],
-        'R': [0b11110, 0b10001, 0b11110, 0b10010, 0b10001],
-        'S': [0b01110, 0b10000, 0b01110, 0b00001, 0b01110],
-        'T': [0b11111, 0b00100, 0b00100, 0b00100, 0b00100],
-        'U': [0b10001, 0b10001, 0b10001, 0b10001, 0b01110],
-        'V': [0b10001, 0b10001, 0b01010, 0b01010, 0b00100],
-        'W': [0b10001, 0b10001, 0b10101, 0b11011, 0b10001],
-        'X': [0b10001, 0b01010, 0b00100, 0b01010, 0b10001],
-        'Y': [0b10001, 0b01010, 0b00100, 0b00100, 0b00100],
-        'Z': [0b11111, 0b00010, 0b00100, 0b01000, 0b11111],
-        '0': [0b01110, 0b10001, 0b10001, 0b10001, 0b01110],
-        '1': [0b00100, 0b01100, 0b00100, 0b00100, 0b01110],
-        '2': [0b01110, 0b00001, 0b01110, 0b10000, 0b11111],
-        '3': [0b11110, 0b00001, 0b00110, 0b00001, 0b11110],
-        '4': [0b10001, 0b10001, 0b11111, 0b00001, 0b00001],
-        '5': [0b11111, 0b10000, 0b11110, 0b00001, 0b11110],
-        '6': [0b01110, 0b10000, 0b11110, 0b10001, 0b01110],
-        '7': [0b11111, 0b00001, 0b00010, 0b00100, 0b00100],
-        '8': [0b01110, 0b10001, 0b01110, 0b10001, 0b01110],
-        '9': [0b01110, 0b10001, 0b01111, 0b00001, 0b01110],
-        ',': [0b00000, 0b00000, 0b00000, 0b00100, 0b01000],
-        '.': [0b00000, 0b00000, 0b00000, 0b00000, 0b00100],
-        '?': [0b01110, 0b00001, 0b00110, 0b00000, 0b00100],
-        '!': [0b00100, 0b00100, 0b00100, 0b00000, 0b00100],
-        '%': [0b11001, 0b11010, 0b00100, 0b01011, 0b10011],
-        ' ': [0b00000, 0b00000, 0b00000, 0b00000, 0b00000] // Space character
+        'A': [0x1C, 0x22, 0x3E, 0x22, 0x22],
+        'B': [0x3C, 0x22, 0x3C, 0x22, 0x3C],
+        'C': [0x1C, 0x22, 0x20, 0x22, 0x1C],
+        'D': [0x3C, 0x22, 0x22, 0x22, 0x3C],
+        'E': [0x3E, 0x20, 0x3C, 0x20, 0x3E],
+        'F': [0x3E, 0x20, 0x3C, 0x20, 0x20],
+        'G': [0x1C, 0x22, 0x20, 0x26, 0x1A],
+        'H': [0x22, 0x22, 0x3E, 0x22, 0x22],
+        'I': [0x1C, 0x08, 0x08, 0x08, 0x1C],
+        'J': [0x02, 0x02, 0x02, 0x22, 0x1C],
+        'K': [0x22, 0x24, 0x38, 0x24, 0x22],
+        'L': [0x20, 0x20, 0x20, 0x20, 0x3E],
+        'M': [0x22, 0x36, 0x2A, 0x22, 0x22],
+        'N': [0x22, 0x32, 0x2A, 0x26, 0x22],
+        'O': [0x1C, 0x22, 0x22, 0x22, 0x1C],
+        'P': [0x3C, 0x22, 0x3C, 0x20, 0x20],
+        'Q': [0x1C, 0x22, 0x2A, 0x24, 0x1A],
+        'R': [0x3C, 0x22, 0x3C, 0x24, 0x22],
+        'S': [0x1E, 0x20, 0x1C, 0x02, 0x3C],
+        'T': [0x3E, 0x08, 0x08, 0x08, 0x08],
+        'U': [0x22, 0x22, 0x22, 0x22, 0x1C],
+        'V': [0x22, 0x22, 0x14, 0x14, 0x08],
+        'W': [0x22, 0x22, 0x2A, 0x2A, 0x14],
+        'X': [0x22, 0x14, 0x08, 0x14, 0x22],
+        'Y': [0x22, 0x14, 0x08, 0x08, 0x08],
+        'Z': [0x3E, 0x04, 0x08, 0x10, 0x3E],
+        '?': [0x1C, 0x22, 0x0C, 0x00, 0x04],
+        '!': [0x08, 0x08, 0x08, 0x00, 0x08],
+        '%': [0x22, 0x14, 0x08, 0x14, 0x22],
+        '0': [0x1C, 0x22, 0x22, 0x22, 0x1C],
+        '1': [0x08, 0x18, 0x08, 0x08, 0x1C],
+        '2': [0x1C, 0x02, 0x1C, 0x20, 0x1E],
+        '3': [0x1C, 0x02, 0x1C, 0x02, 0x1C],
+        '4': [0x22, 0x22, 0x3E, 0x02, 0x02],
+        '5': [0x3E, 0x20, 0x3C, 0x02, 0x3C],
+        '6': [0x1C, 0x20, 0x3C, 0x22, 0x1C],
+        '7': [0x3E, 0x02, 0x04, 0x08, 0x08],
+        '8': [0x1C, 0x22, 0x1C, 0x22, 0x1C],
+        '9': [0x1C, 0x22, 0x1E, 0x02, 0x1C],
+        ' ': [0x00, 0x00, 0x00, 0x00, 0x00]
     };
 
     // Low-level communication functions
@@ -180,12 +178,12 @@ namespace LedMatrix {
         if (row < 0 || row >= 8 || col < 0 || col >= 16) {
             return; // Silent fail
         }
-        const byteIndex = 2 * row + Math.floor(col / 8);
-        const bitPosition = col % 8;
+        const hardwareRow = col; // Map column to hardware row
+        const hardwareCol = row; // Map row to hardware column
         if (state) {
-            matrixBuffer[byteIndex] |= (1 << bitPosition);
+            matrixBuffer[hardwareCol] |= (1 << hardwareRow);
         } else {
-            matrixBuffer[byteIndex] &= ~(1 << bitPosition);
+            matrixBuffer[hardwareCol] &= ~(1 << hardwareRow);
         }
         updateDisplay();
     }
@@ -196,15 +194,16 @@ namespace LedMatrix {
      */
     //% block="clear display"
     export function clear() {
+        matrixBuffer = [];
         for (let i = 0; i < 16; i++) {
-            matrixBuffer[i] = 0;
+            matrixBuffer.push(0);
         }
         updateDisplay();
     }
 
     /**
-     * Scroll text across the LED matrix horizontally.
-     * @param text The text to scroll (supports A-Z, 0-9, ,, ., ?, !, %).
+     * Scroll text across the LED matrix.
+     * @param text The text to scroll (supports A-Z, 0-9, ?, !, %).
      * @param speed The delay between frames in milliseconds (50-1000).
      * @param direction The scroll direction (0 for left, 1 for right).
      */
@@ -212,15 +211,15 @@ namespace LedMatrix {
     //% speed.min=50 speed.max=1000
     //% direction.min=0 direction.max=1
     export function scrollText(text: string, speed: number, direction: number) {
-        const bitmap = getMessageBitmap(text);
-        if (direction === 0) { // Scroll left (text moves left)
-            const maxStartCol = bitmap.length - 16;
+        let bitmap = getMessageBitmap(text);
+        if (direction === 0) { // Scroll left
+            let maxStartCol = bitmap.length - 16;
             for (let startCol = 0; startCol <= maxStartCol; startCol++) {
                 displayMessage(bitmap, startCol);
                 basic.pause(speed);
             }
-        } else if (direction === 1) { // Scroll right (text moves right)
-            const minStartCol = -16;
+        } else if (direction === 1) { // Scroll right
+            let minStartCol = 0 - 16;
             for (let startCol = bitmap.length - 16; startCol >= minStartCol; startCol--) {
                 displayMessage(bitmap, startCol);
                 basic.pause(speed);
@@ -248,10 +247,11 @@ namespace LedMatrix {
                 setLed(r, c, state);
             }
         }
+        updateDisplay();
     }
 
     /**
-     * Draw a line on the LED matrix (horizontal or vertical only).
+     * Draw a line on the LED matrix (horizontal or vertical).
      * @param startRow The starting row (0-7) of the line.
      * @param startCol The starting column (0-15) of the line.
      * @param endRow The ending row (0-7) of the line.
@@ -265,78 +265,43 @@ namespace LedMatrix {
     export function drawLine(startRow: number, startCol: number, endRow: number, endCol: number) {
         if (startRow === endRow) {
             // Horizontal line
-            const minCol = Math.min(startCol, endCol);
-            const maxCol = Math.max(startCol, endCol);
+            let minCol = Math.min(startCol, endCol);
+            let maxCol = Math.max(startCol, endCol);
             for (let col = minCol; col <= maxCol && col < 16; col++) {
                 setLed(startRow, col, 1);
             }
         } else if (startCol === endCol) {
             // Vertical line
-            const minRow = Math.min(startRow, endRow);
-            const maxRow = Math.max(startRow, endRow);
+            let minRow = Math.min(startRow, endRow);
+            let maxRow = Math.max(startRow, endRow);
             for (let row = minRow; row <= maxRow && row < 8; row++) {
                 setLed(row, startCol, 1);
             }
         }
+        updateDisplay();
     }
 
     // Helper functions for scrolling text
     function getMessageBitmap(text: string): number[] {
         let bitmap: number[] = [];
-        // Add padding columns at the beginning
-        for (let i = 0; i < 16; i++) {
-            bitmap.push(0);
-        }
+        for (let i = 0; i < 16; i++) bitmap.push(0); // Initial padding
         for (let char of text.toUpperCase()) {
             if (font[char]) {
-                for (let c = 0; c < 5; c++) { // For each column of the character
-                    let columnPattern = 0;
-                    for (let r = 0; r < 5; r++) { // For each row
-                        let bit = (font[char][r] >> (4 - c)) & 1; // Get bit for column c
-                        columnPattern |= (bit << r); // Set bit r in column pattern
-                    }
-                    bitmap.push(columnPattern);
-                }
+                bitmap = bitmap.concat(font[char]);
             } else {
-                // Undefined character, add blank columns
-                for (let c = 0; c < 5; c++) {
-                    bitmap.push(0);
-                }
+                bitmap = bitmap.concat(font[' ']); // Default to space if undefined
             }
-            // Add a blank column between characters
-            bitmap.push(0);
+            bitmap.push(0); // Space between characters
         }
-        // Remove the last blank column if text is not empty
-        if (text.length > 0) {
-            bitmap.pop();
-        }
-        // Add padding columns at the end
-        for (let i = 0; i < 16; i++) {
-            bitmap.push(0);
-        }
+        if (text.length > 0) bitmap.pop(); // Remove extra space at end
+        for (let i = 0; i < 16; i++) bitmap.push(0); // Final padding
         return bitmap;
     }
 
     function displayMessage(bitmap: number[], startCol: number) {
-        for (let r = 0; r < 8; r++) {
-            let byte0 = 0; // Columns 0-7
-            let byte1 = 0; // Columns 8-15
-            for (let c = 0; c < 8; c++) {
-                let msgCol = startCol + c;
-                if (msgCol >= 0 && msgCol < bitmap.length) {
-                    let bit = (bitmap[msgCol] >> r) & 1;
-                    byte0 |= (bit << c);
-                }
-            }
-            for (let c = 8; c < 16; c++) {
-                let msgCol = startCol + c;
-                if (msgCol >= 0 && msgCol < bitmap.length) {
-                    let bit = (bitmap[msgCol] >> r) & 1;
-                    byte1 |= (bit << (c - 8));
-                }
-            }
-            matrixBuffer[2 * r] = byte0;
-            matrixBuffer[2 * r + 1] = byte1;
+        for (let c = 0; c < 16; c++) {
+            let msgCol = startCol + c;
+            matrixBuffer[c] = (msgCol >= 0 && msgCol < bitmap.length) ? bitmap[msgCol] : 0;
         }
         updateDisplay();
     }
