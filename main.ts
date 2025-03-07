@@ -27,22 +27,22 @@ namespace LedMatrix {
         [key: string]: number[];
     }
 
-    // Font definition for A-Z, 0-9, ?, !, % (5x8 bitmaps, stored in row-major order now)
+    // Font definition corrected for proper orientation
     const font: FontMap = {
-        'A': [0x08, 0x14, 0x22, 0x3E, 0x22],
-        'B': [0x3C, 0x2A, 0x2A, 0x2A, 0x1C],
-        'C': [0x1C, 0x22, 0x20, 0x22, 0x1C],
-        'D': [0x3C, 0x22, 0x22, 0x22, 0x1C],
-        'E': [0x3E, 0x28, 0x3C, 0x28, 0x3E],
-        'F': [0x3E, 0x28, 0x3C, 0x28, 0x20]
+        'A': [0b01110, 0b10001, 0b11111, 0b10001, 0b10001],
+        'B': [0b11110, 0b10001, 0b11110, 0b10001, 0b11110],
+        'C': [0b01110, 0b10001, 0b10000, 0b10001, 0b01110],
+        'D': [0b11100, 0b10010, 0b10001, 0b10010, 0b11100],
+        'E': [0b11111, 0b10000, 0b11110, 0b10000, 0b11111],
+        'F': [0b11111, 0b10000, 0b11110, 0b10000, 0b10000]
     };
 
-    function transposeFontData(input: number[]): number[] {
+    function rotateFontData(input: number[]): number[] {
         let output: number[] = new Array(8).fill(0);
-        for (let row = 0; row < 8; row++) {
-            for (let col = 0; col < 5; col++) {
-                if (input[col] & (1 << row)) {
-                    output[row] |= (1 << col);
+        for (let row = 0; row < 5; row++) {
+            for (let col = 0; col < 8; col++) {
+                if (input[row] & (1 << col)) {
+                    output[col] |= (1 << row);
                 }
             }
         }
@@ -53,7 +53,7 @@ namespace LedMatrix {
         let bitmap: number[] = new Array(16).fill(0);
         for (let char of text.toUpperCase()) {
             if (font[char]) {
-                bitmap = bitmap.concat(transposeFontData(font[char]));
+                bitmap = bitmap.concat(rotateFontData(font[char]));
             } else {
                 bitmap = bitmap.concat(new Array(8).fill(0));
             }
