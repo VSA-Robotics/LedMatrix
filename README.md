@@ -17,7 +17,7 @@ To use this extension in your micro:bit project, follow these steps:
 
 1. Open the [MakeCode editor](https://makecode.microbit.org/) in your browser.
 2. Click on the **"Extensions"** option in the block menu.
-3. In the search bar, enter the URL of this repository (e.g., `https://github.com/VSA-Robotics/LedMatrix`) or search for "LedMatrix" if it’s published.
+3. In the search bar, enter the URL of this repository (e.g., `https://github.com/VSA-Robotics/LedMatrix`).
 4. Click **"Add to Project"** to install the extension into your MakeCode environment.
 
 ### Manual Installation (Optional)
