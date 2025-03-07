@@ -145,7 +145,7 @@ namespace LedMatrix {
         showRows(matrixBuffer);
     }
 
-    // Helper functions for font orientation
+    // Helper function for font orientation
     function flipVertical(pattern: number): number {
         let reversed = 0;
         for (let i = 0; i < 8; i++) {
@@ -153,10 +153,6 @@ namespace LedMatrix {
             pattern >>= 1;
         }
         return reversed;
-    }
-
-    function flipHorizontal(charFont: number[]): number[] {
-        return charFont.slice().reverse();
     }
 
     // Exported block functions
@@ -192,7 +188,7 @@ namespace LedMatrix {
         if (row < 0 || row >= 8 || col < 0 || col >= 16) {
             return; // Silent fail
         }
-        // Corrected mapping: row to hardware row, col to hardware column
+        // Correct mapping: row to hardware row, col to hardware column
         if (state) {
             matrixBuffer[col] |= (1 << row);
         } else {
@@ -301,7 +297,7 @@ namespace LedMatrix {
         for (let char of text.toUpperCase()) {
             if (font[char]) {
                 for (let colPattern of font[char]) {
-                    bitmap.push(flipVertical(colPattern)); // Flip vertically to correct upside-down letters
+                    bitmap.push(flipVertical(colPattern)); // Flip vertically to correct orientation
                 }
             } else {
                 bitmap = bitmap.concat(font[' ']); // Default to space if undefined
