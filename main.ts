@@ -45,38 +45,26 @@ namespace LedMatrix {
         [key: string]: number[];
     }
 
-const font: FontMap = {
-    'A': [0b01110, 0b10001, 0b11111, 0b10001, 0b10001],
-    'B': [0b11110, 0b10001, 0b11110, 0b10001, 0b11110],
-    'C': [0b01110, 0b10001, 0b10000, 0b10001, 0b01110],
-    'D': [0b11100, 0b10010, 0b10001, 0b10010, 0b11100],
-    'E': [0b11111, 0b10000, 0b11110, 0b10000, 0b11111],
-    'F': [0b11111, 0b10000, 0b11110, 0b10000, 0b10000]
-    // Add more letters here...
-};
+    // Full FontMap definition for A-Z in row-major order for correct horizontal display
+    const font: FontMap = {
+        'A': [0b01110, 0b10001, 0b11111, 0b10001, 0b10001],
+        'B': [0b11110, 0b10001, 0b11110, 0b10001, 0b11110],
+        'C': [0b01110, 0b10001, 0b10000, 0b10001, 0b01110],
+        'D': [0b11100, 0b10010, 0b10001, 0b10010, 0b11100],
+        'E': [0b11111, 0b10000, 0b11110, 0b10000, 0b11111],
+        'F': [0b11111, 0b10000, 0b11110, 0b10000, 0b10000]
+        // Add more letters here...
+    };
 
-    // Function to convert character to LED matrix format
+    // Function to get character bitmap without transposition for correct horizontal text display
     function getCharacterBitmap(char: string): number[] {
         if (font[char]) {
-            return transposeFontData(font[char]);
+            return font[char]; // Use direct row-major format
         }
         return new Array(8).fill(0); // Return empty space for unsupported characters
     }
 
-    // Function to transpose font data
-    function transposeFontData(input: number[]): number[] {
-        let output: number[] = new Array(8).fill(0);
-        for (let row = 0; row < 5; row++) {
-            for (let col = 0; col < 8; col++) {
-                if (input[row] & (1 << col)) {
-                    output[col] |= (1 << row);
-                }
-            }
-        }
-        return output;
-    }
-
-    // Function to scroll text across the LED matrix
+    // Function to scroll text across the LED matrix horizontally
     export function scrollText(text: string, speed: number, direction: number) {
         let bitmap: number[] = [];
         for (let char of text.toUpperCase()) {
@@ -86,10 +74,11 @@ const font: FontMap = {
         displayScrollingText(bitmap, speed, direction);
     }
 
-    // Function to handle scrolling effect
+    // Function to handle scrolling effect horizontally
     function displayScrollingText(bitmap: number[], speed: number, direction: number) {
         let maxStartCol = bitmap.length - 16;
         for (let startCol = 0; startCol <= maxStartCol; startCol++) {
+            matrixBuffer = bitmap.slice(startCol, startCol + 16);
             updateDisplay();
             basic.pause(speed);
         }
