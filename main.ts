@@ -13,8 +13,8 @@ namespace LedMatrix {
     //    - Draw shapes with `draw line from row %startRow col %startCol to row %endRow col %endCol` or `draw rectangle at x %x y %y width %width height %height state %state`.
     // 3. **Tips**:
     //    - Use speed 100-300ms for readable text scrolling.
-    //    - Row range: 0-7, Column range: 0-15 (for 8x16 matrix, adjusted for 90-degree rotation).
-    //    - Ensure your 8x16 LED matrix is wired correctly (16 columns vertical, 8 rows horizontal).
+    //    - Row range: 0-7, Column range: 0-15 (for 8x16 matrix).
+    //    - Ensure your 8x16 LED matrix is wired with 16 columns horizontally and 8 rows vertically.
     // =========================================================================
 
     // Global variables for pins and buffer
@@ -25,49 +25,50 @@ namespace LedMatrix {
         matrixBuffer.push(0); // Initialize 16-column buffer for 8x16 matrix
     }
 
-    // Font definition for A-Z and space (5 columns per character, 8 rows high)
+    // Font definition for A-Z, 0-9, ?, !, % (5 columns per character, 8 rows high)
     const font: { [key: string]: number[] } = {
-    'A': [0x1C, 0x22, 0x3E, 0x22, 0x22],
-    'B': [0x3C, 0x22, 0x3C, 0x22, 0x3C],
-    'C': [0x1C, 0x22, 0x20, 0x22, 0x1C],
-    'D': [0x3C, 0x22, 0x22, 0x22, 0x3C],
-    'E': [0x3E, 0x20, 0x3C, 0x20, 0x3E],
-    'F': [0x3E, 0x20, 0x3C, 0x20, 0x20],
-    'G': [0x1C, 0x22, 0x20, 0x26, 0x1A],
-    'H': [0x22, 0x22, 0x3E, 0x22, 0x22],
-    'I': [0x1C, 0x08, 0x08, 0x08, 0x1C],
-    'J': [0x02, 0x02, 0x02, 0x22, 0x1C],
-    'K': [0x22, 0x24, 0x38, 0x24, 0x22],
-    'L': [0x20, 0x20, 0x20, 0x20, 0x3E],
-    'M': [0x22, 0x36, 0x2A, 0x22, 0x22],
-    'N': [0x22, 0x32, 0x2A, 0x26, 0x22],
-    'O': [0x1C, 0x22, 0x22, 0x22, 0x1C],
-    'P': [0x3C, 0x22, 0x3C, 0x20, 0x20],
-    'Q': [0x1C, 0x22, 0x2A, 0x24, 0x1A],
-    'R': [0x3C, 0x22, 0x3C, 0x24, 0x22],
-    'S': [0x1E, 0x20, 0x1C, 0x02, 0x3C],
-    'T': [0x3E, 0x08, 0x08, 0x08, 0x08],
-    'U': [0x22, 0x22, 0x22, 0x22, 0x1C],
-    'V': [0x22, 0x22, 0x14, 0x14, 0x08],
-    'W': [0x22, 0x22, 0x2A, 0x2A, 0x14],
-    'X': [0x22, 0x14, 0x08, 0x14, 0x22],
-    'Y': [0x22, 0x14, 0x08, 0x08, 0x08],
-    'Z': [0x3E, 0x04, 0x08, 0x10, 0x3E],
-    '?': [0x1C, 0x22, 0x0C, 0x00, 0x04],
-    '!': [0x08, 0x08, 0x08, 0x00, 0x08],
-    '%': [0x22, 0x14, 0x08, 0x14, 0x22],
-    '0': [0x1C, 0x22, 0x22, 0x22, 0x1C],
-    '1': [0x08, 0x18, 0x08, 0x08, 0x1C],
-    '2': [0x1C, 0x02, 0x1C, 0x20, 0x1E],
-    '3': [0x1C, 0x02, 0x1C, 0x02, 0x1C],
-    '4': [0x22, 0x22, 0x3E, 0x02, 0x02],
-    '5': [0x3E, 0x20, 0x3C, 0x02, 0x3C],
-    '6': [0x1C, 0x20, 0x3C, 0x22, 0x1C],
-    '7': [0x3E, 0x02, 0x04, 0x08, 0x08],
-    '8': [0x1C, 0x22, 0x1C, 0x22, 0x1C],
-    '9': [0x1C, 0x22, 0x1E, 0x02, 0x1C],
-    ' ': [0x00, 0x00, 0x00, 0x00, 0x00]
-};
+        'A': [0x1C, 0x22, 0x3E, 0x22, 0x22],
+        'B': [0x3C, 0x22, 0x3C, 0x22, 0x3C],
+        'C': [0x1C, 0x22, 0x20, 0x22, 0x1C],
+        'D': [0x3C, 0x22, 0x22, 0x22, 0x3C],
+        'E': [0x3E, 0x20, 0x3C, 0x20, 0x3E],
+        'F': [0x3E, 0x20, 0x3C, 0x20, 0x20],
+        'G': [0x1C, 0x22, 0x20, 0x26, 0x1A],
+        'H': [0x22, 0x22, 0x3E, 0x22, 0x22],
+        'I': [0x1C, 0x08, 0x08, 0x08, 0x1C],
+        'J': [0x02, 0x02, 0x02, 0x22, 0x1C],
+        'K': [0x22, 0x24, 0x38, 0x24, 0x22],
+        'L': [0x20, 0x20, 0x20, 0x20, 0x3E],
+        'M': [0x22, 0x36, 0x2A, 0x22, 0x22],
+        'N': [0x22, 0x32, 0x2A, 0x26, 0x22],
+        'O': [0x1C, 0x22, 0x22, 0x22, 0x1C],
+        'P': [0x3C, 0x22, 0x3C, 0x20, 0x20],
+        'Q': [0x1C, 0x22, 0x2A, 0x24, 0x1A],
+        'R': [0x3C, 0x22, 0x3C, 0x24, 0x22],
+        'S': [0x1E, 0x20, 0x1C, 0x02, 0x3C],
+        'T': [0x3E, 0x08, 0x08, 0x08, 0x08],
+        'U': [0x22, 0x22, 0x22, 0x22, 0x1C],
+        'V': [0x22, 0x22, 0x14, 0x14, 0x08],
+        'W': [0x22, 0x22, 0x2A, 0x2A, 0x14],
+        'X': [0x22, 0x14, 0x08, 0x14, 0x22],
+        'Y': [0x22, 0x14, 0x08, 0x08, 0x08],
+        'Z': [0x3E, 0x04, 0x08, 0x10, 0x3E],
+        '?': [0x1C, 0x22, 0x0C, 0x00, 0x04],
+        '!': [0x08, 0x08, 0x08, 0x00, 0x08],
+        '%': [0x22, 0x14, 0x08, 0x14, 0x22],
+        '0': [0x1C, 0x22, 0x22, 0x22, 0x1C],
+        '1': [0x08, 0x18, 0x08, 0x08, 0x1C],
+        '2': [0x1C, 0x02, 0x1C, 0x20, 0x1E],
+        '3': [0x1C, 0x02, 0x1C, 0x02, 0x1C],
+        '4': [0x22, 0x22, 0x3E, 0x02, 0x02],
+        '5': [0x3E, 0x20, 0x3C, 0x02, 0x3C],
+        '6': [0x1C, 0x20, 0x3C, 0x22, 0x1C],
+        '7': [0x3E, 0x02, 0x04, 0x08, 0x08],
+        '8': [0x1C, 0x22, 0x1C, 0x22, 0x1C],
+        '9': [0x1C, 0x22, 0x1E, 0x02, 0x1C],
+        ' ': [0x00, 0x00, 0x00, 0x00, 0x00]
+    };
+
     // Low-level communication functions
     function sendBit(bit: number) {
         pins.digitalWritePin(sckPin, 0);
@@ -160,8 +161,8 @@ namespace LedMatrix {
 
     /**
      * Set the state of an individual LED on the 8x16 matrix.
-     * @param row The row index (0-7) to set the LED (now column in rotated view).
-     * @param col The column index (0-15) to set the LED (now row in rotated view).
+     * @param row The row index (0-7) to set the LED.
+     * @param col The column index (0-15) to set the LED.
      * @param state The state to set (0 for off, 1 for on).
      */
     //% block="set LED at row %row column %col to %state"
@@ -172,12 +173,12 @@ namespace LedMatrix {
         if (row < 0 || row >= 8 || col < 0 || col >= 16) {
             return; // Silent fail
         }
-        const hardwareRow = col; // Map column to hardware row (rotated 90°)
-        const hardwareCol = row; // Map row to hardware column (rotated 90°)
+        const hardwareRow = 7 - col; // Reverse column to correct rotation
+        const hardwareCol = row;     // Use row as column
         if (state) {
-            matrixBuffer[hardwareRow] |= (1 << hardwareCol);
+            matrixBuffer[hardwareCol] |= (1 << hardwareRow);
         } else {
-            matrixBuffer[hardwareRow] &= ~(1 << hardwareCol);
+            matrixBuffer[hardwareCol] &= ~(1 << hardwareRow);
         }
         updateDisplay();
     }
@@ -197,7 +198,7 @@ namespace LedMatrix {
 
     /**
      * Scroll text across the LED matrix.
-     * @param text The text to scroll (supports A-Z, space).
+     * @param text The text to scroll (supports A-Z, 0-9, ?, !, %).
      * @param speed The delay between frames in milliseconds (50-1000).
      * @param direction The scroll direction (0 for left, 1 for right).
      */
@@ -206,13 +207,13 @@ namespace LedMatrix {
     //% direction.min=0 direction.max=1
     export function scrollText(text: string, speed: number, direction: number) {
         let bitmap = getMessageBitmap(text);
-        if (direction === 0) { // Scroll left (down in rotated view)
+        if (direction === 0) { // Scroll left
             let maxStartCol = bitmap.length - 16;
             for (let startCol = 0; startCol <= maxStartCol; startCol++) {
                 displayMessage(bitmap, startCol);
                 basic.pause(speed);
             }
-        } else if (direction === 1) { // Scroll right (up in rotated view)
+        } else if (direction === 1) { // Scroll right
             let minStartCol = 0 - 16;
             for (let startCol = bitmap.length - 16; startCol >= minStartCol; startCol--) {
                 displayMessage(bitmap, startCol);
@@ -223,10 +224,10 @@ namespace LedMatrix {
 
     /**
      * Draw a rectangle on the LED matrix.
-     * @param x The starting column (0-15) of the rectangle (now row in rotated view).
-     * @param y The starting row (0-7) of the rectangle (now column in rotated view).
-     * @param width The width of the rectangle (1-16, now height in rotated view).
-     * @param height The height of the rectangle (1-8, now width in rotated view).
+     * @param x The starting column (0-15) of the rectangle.
+     * @param y The starting row (0-7) of the rectangle.
+     * @param width The width of the rectangle (1-16).
+     * @param height The height of the rectangle (1-8).
      * @param state The state to set (0 for off, 1 for on).
      */
     //% block="draw rectangle at x %x y %y width %width height %height state %state"
@@ -238,18 +239,18 @@ namespace LedMatrix {
     export function drawRectangle(x: number, y: number, width: number, height: number, state: number) {
         for (let c = x; c < x + width && c < 16; c++) {
             for (let r = y; r < y + height && r < 8; r++) {
-                setLed(r, c, state); // Rotated mapping
+                setLed(r, c, state);
             }
         }
         updateDisplay();
     }
 
     /**
-     * Draw a line on the LED matrix (horizontal or vertical, adjusted for rotation).
-     * @param startRow The starting row (0-7) of the line (now column in rotated view).
-     * @param startCol The starting column (0-15) of the line (now row in rotated view).
-     * @param endRow The ending row (0-7) of the line (now column in rotated view).
-     * @param endCol The ending column (0-15) of the line (now row in rotated view).
+     * Draw a line on the LED matrix (horizontal or vertical).
+     * @param startRow The starting row (0-7) of the line.
+     * @param startCol The starting column (0-15) of the line.
+     * @param endRow The ending row (0-7) of the line.
+     * @param endCol The ending column (0-15) of the line.
      */
     //% block="draw line from row %startRow col %startCol to row %endRow col %endCol"
     //% startRow.min=0 startRow.max=7
@@ -258,14 +259,14 @@ namespace LedMatrix {
     //% endCol.min=0 endCol.max=15
     export function drawLine(startRow: number, startCol: number, endRow: number, endCol: number) {
         if (startRow === endRow) {
-            // Horizontal line in rotated view (vertical in original)
+            // Horizontal line
             let minCol = Math.min(startCol, endCol);
             let maxCol = Math.max(startCol, endCol);
             for (let col = minCol; col <= maxCol && col < 16; col++) {
                 setLed(startRow, col, 1);
             }
         } else if (startCol === endCol) {
-            // Vertical line in rotated view (horizontal in original)
+            // Vertical line
             let minRow = Math.min(startRow, endRow);
             let maxRow = Math.max(startRow, endRow);
             for (let row = minRow; row <= maxRow && row < 8; row++) {
