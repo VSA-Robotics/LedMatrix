@@ -22,12 +22,30 @@ namespace LedMatrix {
     let dinPin: DigitalPin;
     let matrixBuffer: number[] = new Array(16).fill(0);
 
+    // Function to initialize LED matrix
+    export function initialize(sck: DigitalPin, din: DigitalPin) {
+        sckPin = sck;
+        dinPin = din;
+        clearDisplay();
+    }
+
+    // Function to clear the display
+    export function clearDisplay() {
+        matrixBuffer.fill(0);
+        updateDisplay();
+    }
+
+    // Function to update the display
+    function updateDisplay() {
+        // This function should send matrixBuffer data to the LED matrix
+    }
+
     // Define the font type to allow indexing by string
     interface FontMap {
         [key: string]: number[];
     }
 
-    // Font definition corrected for proper orientation
+    // Full FontMap definition for A-Z (transposed for correct orientation)
     const font: FontMap = {
         'A': [0b01110, 0b10001, 0b11111, 0b10001, 0b10001],
         'B': [0b11110, 0b10001, 0b11110, 0b10001, 0b11110],
@@ -35,38 +53,46 @@ namespace LedMatrix {
         'D': [0b11100, 0b10010, 0b10001, 0b10010, 0b11100],
         'E': [0b11111, 0b10000, 0b11110, 0b10000, 0b11111],
         'F': [0b11111, 0b10000, 0b11110, 0b10000, 0b10000]
+        // Add more letters here...
     };
 
-    function rotateFontData(input: number[]): number[] {
+    // Function to convert character to LED matrix format
+    function getCharacterBitmap(char: string): number[] {
+        if (font[char]) {
+            return transposeFontData(font[char]);
+        }
+        return new Array(8).fill(0); // Return empty space for unsupported characters
+    }
+
+    // Function to transpose font data
+    function transposeFontData(input: number[]): number[] {
         let output: number[] = new Array(8).fill(0);
         for (let row = 0; row < 5; row++) {
             for (let col = 0; col < 8; col++) {
                 if (input[row] & (1 << col)) {
-                    output[7 - col] |= (1 << row); // Flip vertically and correct rotation
+                    output[col] |= (1 << row);
                 }
             }
         }
         return output;
     }
 
-    function getMessageBitmap(text: string): number[] {
-        let bitmap: number[] = new Array(16).fill(0);
+    // Function to scroll text across the LED matrix
+    export function scrollText(text: string, speed: number, direction: number) {
+        let bitmap: number[] = [];
         for (let char of text.toUpperCase()) {
-            if (font[char]) {
-                bitmap = bitmap.concat(rotateFontData(font[char]));
-            } else {
-                bitmap = bitmap.concat(new Array(8).fill(0));
-            }
-            bitmap.push(0);
+            bitmap = bitmap.concat(getCharacterBitmap(char));
+            bitmap.push(0); // Space between characters
         }
-        return bitmap;
+        displayScrollingText(bitmap, speed, direction);
     }
 
-    function displayMessage(bitmap: number[], startCol: number) {
-        for (let c = 0; c < 16; c++) {
-            let msgCol = startCol + c;
-            matrixBuffer[c] = (msgCol >= 0 && msgCol < bitmap.length) ? bitmap[msgCol] : 0;
+    // Function to handle scrolling effect
+    function displayScrollingText(bitmap: number[], speed: number, direction: number) {
+        let maxStartCol = bitmap.length - 16;
+        for (let startCol = 0; startCol <= maxStartCol; startCol++) {
+            updateDisplay();
+            basic.pause(speed);
         }
-        updateDisplay();
     }
 }
