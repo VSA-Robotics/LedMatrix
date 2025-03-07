@@ -144,8 +144,7 @@ namespace LedMatrix {
         pins.digitalWritePin(dinPin, 1);
         pins.digitalWritePin(sckPin, 1);
         turnOnScreen();
-        // Use single string for console.log to avoid conversion errors
-        console.log("LED Matrix initialized with SCK: " + sck + " DIN: " + din);
+        console.log("LED Matrix initialized with SCK: " + sck + " DIN: " + din); // Single string argument
     }
 
     /**
@@ -160,7 +159,7 @@ namespace LedMatrix {
     //% state.min=0 state.max=1
     export function setLed(row: number, col: number, state: number) {
         if (row < 0 || row >= 8 || col < 0 || col >= 16) {
-            return; // Silent fail to avoid console output that might break conversion
+            return; // Silent fail to avoid conversion issues
         }
         const hardwareRow = col;
         const hardwareCol = row;
@@ -188,7 +187,7 @@ namespace LedMatrix {
     /**
      * Scroll text across the LED matrix.
      * @param text The text to scroll (supports A-Z, space).
-     * @param speed The delay between frames in milliseconds (50-1000 recommended).
+     * @param speed The delay between frames in milliseconds (50-1000).
      * @param direction The scroll direction (0 for left, 1 for right).
      */
     //% block="scroll text %text with speed %speed direction %direction"
