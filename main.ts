@@ -1,5 +1,22 @@
 //% color="#AA278D" weight=100
 namespace LedMatrix {
+    // =========================================================================
+    // GUIDELINES FOR USING LED MATRIX EXTENSION
+    // =========================================================================
+    // 1. **Initialization**: Call `initialize LED matrix with SCK %sck and DIN %din`
+    //    - Use micro:bit pins (e.g., P0, P15, P16) for SCK and DIN.
+    //    - Example: `LedMatrix.initialize(DigitalPin.P15, DigitalPin.P16)`
+    // 2. **Basic Usage**:
+    //    - Clear the display with `clear display`.
+    //    - Set individual LEDs with `set LED at row %row column %col to %state` (0 = off, 1 = on).
+    //    - Scroll text with `scroll text %text with speed %speed direction %direction` (speed in ms, 0 = left, 1 = right).
+    //    - Draw shapes with `draw line` or `draw rectangle`.
+    // 3. **Tips**:
+    //    - Speed for scrolling should be 50-1000ms for readability.
+    //    - Row range: 0-7, Column range: 0-15 (for 8x16 matrix).
+    //    - Ensure your 8x16 LED matrix is properly wired to the micro:bit pins.
+    // =========================================================================
+
     // Global variables for pins and buffer
     let sckPin: DigitalPin;  // Serial clock pin for LED matrix
     let dinPin: DigitalPin;  // Data in pin for LED matrix
@@ -113,8 +130,8 @@ namespace LedMatrix {
     // Exported block functions
     /**
      * Initialize the LED matrix with specified SCK and DIN pins.
-     * @param sck The clock pin for the LED matrix.
-     * @param din The data input pin for the LED matrix.
+     * @param sck The clock pin for the LED matrix (e.g., P0, P15).
+     * @param din The data input pin for the LED matrix (e.g., P1, P16).
      */
     //% block="initialize LED matrix with SCK %sck and DIN %din"
     //% sck.fieldEditor="gridpicker"
@@ -132,11 +149,11 @@ namespace LedMatrix {
 
     /**
      * Set the state of an individual LED on the 8x16 matrix.
-     * @param row The row index (0-7).
-     * @param col The column index (0-15).
+     * @param row The row index (0-7) to set the LED.
+     * @param col The column index (0-15) to set the LED.
      * @param state The state to set (0 for off, 1 for on).
      */
-    //% block="set LED at row %row|column %col|to %state"
+    //% block="set LED at row %row column %col to %state"
     //% row.min=0 row.max=7
     //% col.min=0 col.max=15
     //% state.min=0 state.max=1
@@ -157,6 +174,7 @@ namespace LedMatrix {
 
     /**
      * Clear the entire LED matrix display.
+     * Turns off all LEDs on the 8x16 matrix.
      */
     //% block="clear display"
     export function clear() {
@@ -169,11 +187,11 @@ namespace LedMatrix {
 
     /**
      * Scroll text across the LED matrix.
-     * @param text The text to scroll across the display.
-     * @param speed The delay between frames in milliseconds.
+     * @param text The text to scroll (supports A-Z, space).
+     * @param speed The delay between frames in milliseconds (50-1000 recommended).
      * @param direction The scroll direction (0 for left, 1 for right).
      */
-    //% block="scroll text %text|with speed %speed|direction %direction"
+    //% block="scroll text %text with speed %speed direction %direction"
     //% speed.min=50 speed.max=1000
     //% direction.min=0 direction.max=1
     export function scrollText(text: string, speed: number, direction: number = 0) {
@@ -195,13 +213,13 @@ namespace LedMatrix {
 
     /**
      * Draw a rectangle on the LED matrix.
-     * @param x The starting column (0-15).
-     * @param y The starting row (0-7).
-     * @param width The width of the rectangle.
-     * @param height The height of the rectangle.
+     * @param x The starting column (0-15) of the rectangle.
+     * @param y The starting row (0-7) of the rectangle.
+     * @param width The width of the rectangle (1-16).
+     * @param height The height of the rectangle (1-8).
      * @param state The state to set (0 for off, 1 for on).
      */
-    //% block="draw rectangle at x %x|y %y|width %width|height %height|state %state"
+    //% block="draw rectangle at x %x y %y width %width height %height state %state"
     //% x.min=0 x.max=15
     //% y.min=0 y.max=7
     //% width.min=1 width.max=16
@@ -218,12 +236,12 @@ namespace LedMatrix {
 
     /**
      * Draw a line on the LED matrix (horizontal or vertical).
-     * @param startRow The starting row (0-7).
-     * @param startCol The starting column (0-15).
-     * @param endRow The ending row (0-7).
-     * @param endCol The ending column (0-15).
+     * @param startRow The starting row (0-7) of the line.
+     * @param startCol The starting column (0-15) of the line.
+     * @param endRow The ending row (0-7) of the line.
+     * @param endCol The ending column (0-15) of the line.
      */
-    //% block="draw line from row %startRow|col %startCol|to row %endRow|col %endCol"
+    //% block="draw line from row %startRow col %startCol to row %endRow col %endCol"
     //% startRow.min=0 startRow.max=7
     //% startCol.min=0 startCol.max=15
     //% endRow.min=0 endRow.max=7
@@ -272,13 +290,3 @@ namespace LedMatrix {
         updateDisplay();
     }
 }
-
-// Test code (outside namespace for user code)
-LedMatrix.initialize(DigitalPin.P0, DigitalPin.P1); // Example initialization with P0 as SCK, P1 as DIN
-
-basic.forever(function () {
-    LedMatrix.clear();
-    LedMatrix.scrollText("HELLO", 150, 0); // Scroll "HELLO" left to right
-    basic.pause(2000);
-    LedMatrix.clear();
-});
