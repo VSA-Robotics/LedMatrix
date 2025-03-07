@@ -3,29 +3,29 @@ namespace LedMatrix {
     // =========================================================================
     // GUIDELINES FOR USING LED MATRIX EXTENSION
     // =========================================================================
-    // 1. **Initialization**: Call `initialize LED matrix with SCK %sck and DIN %din`
-    //    - Use micro:bit pins (e.g., P0, P15, P16) for SCK and DIN.
+    // 1. **Initialization**: Use `initialize LED matrix with SCK %sck and DIN %din`
+    //    - Select micro:bit pins (e.g., P15 for SCK, P16 for DIN).
     //    - Example: `LedMatrix.initialize(DigitalPin.P15, DigitalPin.P16)`
     // 2. **Basic Usage**:
     //    - Clear the display with `clear display`.
-    //    - Set individual LEDs with `set LED at row %row column %col to %state` (0 = off, 1 = on).
-    //    - Scroll text with `scroll text %text with speed %speed direction %direction` (speed in ms, 0 = left, 1 = right).
-    //    - Draw shapes with `draw line` or `draw rectangle`.
+    //    - Set LEDs with `set LED at row %row column %col to %state` (0 = off, 1 = on).
+    //    - Scroll text with `scroll text %text with speed %speed direction %direction` (speed: 50-1000ms, direction: 0 = left, 1 = right).
+    //    - Draw shapes with `draw line from row %startRow col %startCol to row %endRow col %endCol` or `draw rectangle at x %x y %y width %width height %height state %state`.
     // 3. **Tips**:
-    //    - Speed for scrolling should be 50-1000ms for readability.
+    //    - Use speed 100-300ms for readable text scrolling.
     //    - Row range: 0-7, Column range: 0-15 (for 8x16 matrix).
-    //    - Ensure your 8x16 LED matrix is properly wired to the micro:bit pins.
+    //    - Ensure your 8x16 LED matrix is wired correctly.
     // =========================================================================
 
     // Global variables for pins and buffer
-    let sckPin: DigitalPin;  // Serial clock pin for LED matrix
-    let dinPin: DigitalPin;  // Data in pin for LED matrix
+    let sckPin: DigitalPin;
+    let dinPin: DigitalPin;
     let matrixBuffer: number[] = [];
     for (let i = 0; i < 16; i++) {
-        matrixBuffer.push(0);  // Initialize 16-column buffer for 8x16 matrix
+        matrixBuffer.push(0); // Initialize 16-column buffer for 8x16 matrix
     }
 
-    // Complete font definition for A-Z and space (5 columns per character, 8 rows high)
+    // Font definition for A-Z and space (5 columns per character, 8 rows high)
     const font: { [key: string]: number[] } = {
         'A': [0x1C, 0x22, 0x22, 0x3E, 0x22],
         'B': [0x3C, 0x22, 0x3C, 0x22, 0x3C],
@@ -130,8 +130,8 @@ namespace LedMatrix {
     // Exported block functions
     /**
      * Initialize the LED matrix with specified SCK and DIN pins.
-     * @param sck The clock pin for the LED matrix (e.g., P0, P15).
-     * @param din The data input pin for the LED matrix (e.g., P1, P16).
+     * @param sck The clock pin for the LED matrix (e.g., P15).
+     * @param din The data input pin for the LED matrix (e.g., P16).
      */
     //% block="initialize LED matrix with SCK %sck and DIN %din"
     //% sck.fieldEditor="gridpicker"
@@ -144,7 +144,8 @@ namespace LedMatrix {
         pins.digitalWritePin(dinPin, 1);
         pins.digitalWritePin(sckPin, 1);
         turnOnScreen();
-        console.log("LED Matrix initialized with SCK: " + sck + " DIN: " + din); // Fixed: single string argument
+        // Use single string for console.log to avoid conversion errors
+        console.log("LED Matrix initialized with SCK: " + sck + " DIN: " + din);
     }
 
     /**
@@ -159,8 +160,7 @@ namespace LedMatrix {
     //% state.min=0 state.max=1
     export function setLed(row: number, col: number, state: number) {
         if (row < 0 || row >= 8 || col < 0 || col >= 16) {
-            console.log("Error: Row or column out of bounds");
-            return;
+            return; // Silent fail to avoid console output that might break conversion
         }
         const hardwareRow = col;
         const hardwareCol = row;
@@ -194,7 +194,7 @@ namespace LedMatrix {
     //% block="scroll text %text with speed %speed direction %direction"
     //% speed.min=50 speed.max=1000
     //% direction.min=0 direction.max=1
-    export function scrollText(text: string, speed: number, direction: number = 0) {
+    export function scrollText(text: string, speed: number, direction: number) {
         let bitmap = getMessageBitmap(text);
         if (direction === 0) { // Scroll left
             let maxStartCol = bitmap.length - 16;
@@ -202,7 +202,7 @@ namespace LedMatrix {
                 displayMessage(bitmap, startCol);
                 basic.pause(speed);
             }
-        } else { // Scroll right
+        } else if (direction === 1) { // Scroll right
             let minStartCol = 0 - 16;
             for (let startCol = bitmap.length - 16; startCol >= minStartCol; startCol--) {
                 displayMessage(bitmap, startCol);
