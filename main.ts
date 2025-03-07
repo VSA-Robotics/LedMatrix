@@ -45,16 +45,15 @@ namespace LedMatrix {
         [key: string]: number[];
     }
 
-    // Full FontMap definition for A-Z (transposed for correct orientation)
-    const font: FontMap = {
-        'A': [0b01110, 0b10001, 0b11111, 0b10001, 0b10001],
-        'B': [0b11110, 0b10001, 0b11110, 0b10001, 0b11110],
-        'C': [0b01110, 0b10001, 0b10000, 0b10001, 0b01110],
-        'D': [0b11100, 0b10010, 0b10001, 0b10010, 0b11100],
-        'E': [0b11111, 0b10000, 0b11110, 0b10000, 0b11111],
-        'F': [0b11111, 0b10000, 0b11110, 0b10000, 0b10000]
-        // Add more letters here...
-    };
+const font: FontMap = {
+    'A': [0b01110, 0b10001, 0b11111, 0b10001, 0b10001],
+    'B': [0b11110, 0b10001, 0b11110, 0b10001, 0b11110],
+    'C': [0b01110, 0b10001, 0b10000, 0b10001, 0b01110],
+    'D': [0b11100, 0b10010, 0b10001, 0b10010, 0b11100],
+    'E': [0b11111, 0b10000, 0b11110, 0b10000, 0b11111],
+    'F': [0b11111, 0b10000, 0b11110, 0b10000, 0b10000]
+    // Add more letters here...
+};
 
     // Function to convert character to LED matrix format
     function getCharacterBitmap(char: string): number[] {
