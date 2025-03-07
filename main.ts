@@ -13,8 +13,8 @@ namespace LedMatrix {
     //    - Draw shapes with `draw line from row %startRow col %startCol to row %endRow col %endCol` or `draw rectangle at x %x y %y width %width height %height state %state`.
     // 3. **Tips**:
     //    - Use speed 100-300ms for readable text scrolling.
-    //    - Row range: 0-7, Column range: 0-15 (for 8x16 matrix).
-    //    - Ensure your 8x16 LED matrix is wired correctly.
+    //    - Row range: 0-7, Column range: 0-15 (for 8x16 matrix, adjusted for 90-degree rotation).
+    //    - Ensure your 8x16 LED matrix is wired correctly (16 columns vertical, 8 rows horizontal).
     // =========================================================================
 
     // Global variables for pins and buffer
@@ -27,7 +27,7 @@ namespace LedMatrix {
 
     // Font definition for A-Z and space (5 columns per character, 8 rows high)
     const font: { [key: string]: number[] } = {
-        'A': [0x44, 0x7C, 0x44, 0x44, 0x38],
+        'A': [0x44, 0x7C, 0x44, 0x44, 0x38], // Adjusted for rotation
         'B': [0x3C, 0x44, 0x3C, 0x44, 0x3C],
         'C': [0x38, 0x44, 0x40, 0x44, 0x38],
         'D': [0x3C, 0x44, 0x44, 0x44, 0x3C],
@@ -148,8 +148,8 @@ namespace LedMatrix {
 
     /**
      * Set the state of an individual LED on the 8x16 matrix.
-     * @param row The row index (0-7) to set the LED.
-     * @param col The column index (0-15) to set the LED.
+     * @param row The row index (0-7) to set the LED (now column in rotated view).
+     * @param col The column index (0-15) to set the LED (now row in rotated view).
      * @param state The state to set (0 for off, 1 for on).
      */
     //% block="set LED at row %row column %col to %state"
@@ -160,12 +160,12 @@ namespace LedMatrix {
         if (row < 0 || row >= 8 || col < 0 || col >= 16) {
             return; // Silent fail
         }
-        const hardwareRow = row; // Use row as row
-        const hardwareCol = col; // Use col as column
+        const hardwareRow = col; // Map column to hardware row (rotated 90°)
+        const hardwareCol = row; // Map row to hardware column (rotated 90°)
         if (state) {
-            matrixBuffer[hardwareCol] |= (1 << hardwareRow); // Column index for buffer, row for bit position
+            matrixBuffer[hardwareRow] |= (1 << hardwareCol);
         } else {
-            matrixBuffer[hardwareCol] &= ~(1 << hardwareRow);
+            matrixBuffer[hardwareRow] &= ~(1 << hardwareCol);
         }
         updateDisplay();
     }
@@ -194,13 +194,13 @@ namespace LedMatrix {
     //% direction.min=0 direction.max=1
     export function scrollText(text: string, speed: number, direction: number) {
         let bitmap = getMessageBitmap(text);
-        if (direction === 0) { // Scroll left
+        if (direction === 0) { // Scroll left (down in rotated view)
             let maxStartCol = bitmap.length - 16;
             for (let startCol = 0; startCol <= maxStartCol; startCol++) {
                 displayMessage(bitmap, startCol);
                 basic.pause(speed);
             }
-        } else if (direction === 1) { // Scroll right
+        } else if (direction === 1) { // Scroll right (up in rotated view)
             let minStartCol = 0 - 16;
             for (let startCol = bitmap.length - 16; startCol >= minStartCol; startCol--) {
                 displayMessage(bitmap, startCol);
@@ -211,10 +211,10 @@ namespace LedMatrix {
 
     /**
      * Draw a rectangle on the LED matrix.
-     * @param x The starting column (0-15) of the rectangle.
-     * @param y The starting row (0-7) of the rectangle.
-     * @param width The width of the rectangle (1-16).
-     * @param height The height of the rectangle (1-8).
+     * @param x The starting column (0-15) of the rectangle (now row in rotated view).
+     * @param y The starting row (0-7) of the rectangle (now column in rotated view).
+     * @param width The width of the rectangle (1-16, now height in rotated view).
+     * @param height The height of the rectangle (1-8, now width in rotated view).
      * @param state The state to set (0 for off, 1 for on).
      */
     //% block="draw rectangle at x %x y %y width %width height %height state %state"
@@ -226,18 +226,18 @@ namespace LedMatrix {
     export function drawRectangle(x: number, y: number, width: number, height: number, state: number) {
         for (let c = x; c < x + width && c < 16; c++) {
             for (let r = y; r < y + height && r < 8; r++) {
-                setLed(r, c, state);
+                setLed(r, c, state); // Rotated mapping
             }
         }
         updateDisplay();
     }
 
     /**
-     * Draw a line on the LED matrix (horizontal or vertical).
-     * @param startRow The starting row (0-7) of the line.
-     * @param startCol The starting column (0-15) of the line.
-     * @param endRow The ending row (0-7) of the line.
-     * @param endCol The ending column (0-15) of the line.
+     * Draw a line on the LED matrix (horizontal or vertical, adjusted for rotation).
+     * @param startRow The starting row (0-7) of the line (now column in rotated view).
+     * @param startCol The starting column (0-15) of the line (now row in rotated view).
+     * @param endRow The ending row (0-7) of the line (now column in rotated view).
+     * @param endCol The ending column (0-15) of the line (now row in rotated view).
      */
     //% block="draw line from row %startRow col %startCol to row %endRow col %endCol"
     //% startRow.min=0 startRow.max=7
@@ -246,14 +246,14 @@ namespace LedMatrix {
     //% endCol.min=0 endCol.max=15
     export function drawLine(startRow: number, startCol: number, endRow: number, endCol: number) {
         if (startRow === endRow) {
-            // Horizontal line
+            // Horizontal line in rotated view (vertical in original)
             let minCol = Math.min(startCol, endCol);
             let maxCol = Math.max(startCol, endCol);
             for (let col = minCol; col <= maxCol && col < 16; col++) {
                 setLed(startRow, col, 1);
             }
         } else if (startCol === endCol) {
-            // Vertical line
+            // Vertical line in rotated view (horizontal in original)
             let minRow = Math.min(startRow, endRow);
             let maxRow = Math.max(startRow, endRow);
             for (let row = minRow; row <= maxRow && row < 8; row++) {
