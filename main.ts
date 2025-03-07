@@ -42,7 +42,7 @@ namespace LedMatrix {
         for (let row = 0; row < 5; row++) {
             for (let col = 0; col < 8; col++) {
                 if (input[row] & (1 << col)) {
-                    output[col] |= (1 << (7 - row)); // Flip horizontally
+                    output[7 - col] |= (1 << row); // Flip vertically and correct rotation
                 }
             }
         }
