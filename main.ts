@@ -144,7 +144,7 @@ namespace LedMatrix {
         pins.digitalWritePin(dinPin, 1);
         pins.digitalWritePin(sckPin, 1);
         turnOnScreen();
-        console.log("LED Matrix initialized with SCK:", sck, "DIN:", din);
+        console.log("LED Matrix initialized with SCK: " + sck + " DIN: " + din); // Fixed: single string argument
     }
 
     /**
