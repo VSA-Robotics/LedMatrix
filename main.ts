@@ -20,7 +20,7 @@ namespace LedMatrix {
     // Global variables for pins and buffer
     let sckPin: DigitalPin;
     let dinPin: DigitalPin;
-    let matrixBuffer: number[] = new Array(16).fill(0);
+    let matrixBuffer: number[] = Array.from({ length: 16 }, () => 0);
 
     // Function to initialize LED matrix
     export function initialize(sck: DigitalPin, din: DigitalPin) {
@@ -61,7 +61,7 @@ namespace LedMatrix {
         if (font[char]) {
             return [...font[char]]; // Use direct row-major format
         }
-        return new Array(8).fill(0); // Return empty space for unsupported characters
+        return Array.from({ length: 8 }, () => 0); // Return empty space for unsupported characters
     }
 
     // Function to scroll text across the LED matrix horizontally
