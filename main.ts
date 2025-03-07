@@ -20,7 +20,7 @@ namespace LedMatrix {
     // Global variables for pins and buffer
     let sckPin: DigitalPin;
     let dinPin: DigitalPin;
-    let matrixBuffer: number[] = new Array(16).fill(0);
+    let matrixBuffer: number[] = Array(16).fill(0);
 
     // Function to initialize LED matrix
     export function initialize(sck: DigitalPin, din: DigitalPin) {
@@ -59,9 +59,9 @@ namespace LedMatrix {
     // Function to get character bitmap without transposition for correct horizontal text display
     function getCharacterBitmap(char: string): number[] {
         if (font[char]) {
-            return font[char]; // Use direct row-major format
+            return [...font[char]]; // Use direct row-major format
         }
-        return new Array(8).fill(0); // Return empty space for unsupported characters
+        return Array(8).fill(0); // Return empty space for unsupported characters
     }
 
     // Function to scroll text across the LED matrix horizontally
@@ -76,9 +76,13 @@ namespace LedMatrix {
 
     // Function to handle scrolling effect horizontally
     function displayScrollingText(bitmap: number[], speed: number, direction: number) {
-        let maxStartCol = bitmap.length - 16;
+        let maxStartCol = Math.max(0, bitmap.length - 16);
         for (let startCol = 0; startCol <= maxStartCol; startCol++) {
-            matrixBuffer = bitmap.slice(startCol, startCol + 16);
+            let slice = bitmap.slice(startCol, startCol + 16);
+            matrixBuffer.fill(0);
+            for (let i = 0; i < slice.length; i++) {
+                matrixBuffer[i] = slice[i];
+            }
             updateDisplay();
             basic.pause(speed);
         }
