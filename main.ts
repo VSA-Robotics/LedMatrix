@@ -203,7 +203,7 @@ namespace LedMatrix {
     }
 
     /**
-     * Scroll text across the LED matrix.
+     * Scroll text across the LED matrix horizontally.
      * @param text The text to scroll (supports A-Z, 0-9, ,, ., ?, !, %).
      * @param speed The delay between frames in milliseconds (50-1000).
      * @param direction The scroll direction (0 for left, 1 for right).
@@ -213,13 +213,13 @@ namespace LedMatrix {
     //% direction.min=0 direction.max=1
     export function scrollText(text: string, speed: number, direction: number) {
         const bitmap = getMessageBitmap(text);
-        if (direction === 0) { // Scroll left
+        if (direction === 0) { // Scroll left (text moves left)
             const maxStartCol = bitmap.length - 16;
             for (let startCol = 0; startCol <= maxStartCol; startCol++) {
                 displayMessage(bitmap, startCol);
                 basic.pause(speed);
             }
-        } else if (direction === 1) { // Scroll right
+        } else if (direction === 1) { // Scroll right (text moves right)
             const minStartCol = -16;
             for (let startCol = bitmap.length - 16; startCol >= minStartCol; startCol--) {
                 displayMessage(bitmap, startCol);
@@ -283,21 +283,38 @@ namespace LedMatrix {
     // Helper functions for scrolling text
     function getMessageBitmap(text: string): number[] {
         let bitmap: number[] = [];
-        for (let i = 0; i < 16; i++) bitmap.push(0); // Initial padding
+        // Add padding columns at the beginning
+        for (let i = 0; i < 16; i++) {
+            bitmap.push(0);
+        }
         for (let char of text.toUpperCase()) {
             if (font[char]) {
+                let charBitmap = font[char];
                 for (let col = 0; col < 5; col++) {
-                    bitmap.push(font[char][col] & 0x1F); // Use lower 5 bits, upper 3 bits 0
+                    let colPattern = 0;
+                    for (let row = 0; row < 5; row++) {
+                        let bit = (charBitmap[row] >> (4 - col)) & 1;
+                        colPattern |= (bit << row); // Place character in rows 0 to 4
+                    }
+                    bitmap.push(colPattern);
                 }
             } else {
+                // Undefined character, add blank columns
                 for (let col = 0; col < 5; col++) {
-                    bitmap.push(0); // Undefined characters as spaces
+                    bitmap.push(0);
                 }
             }
-            bitmap.push(0); // Space between characters
+            // Add a blank column between characters
+            bitmap.push(0);
         }
-        if (text.length > 0) bitmap.pop(); // Remove extra space at end
-        for (let i = 0; i < 16; i++) bitmap.push(0); // Final padding
+        // Remove the last blank column if text is not empty
+        if (text.length > 0) {
+            bitmap.pop();
+        }
+        // Add padding columns at the end
+        for (let i = 0; i < 16; i++) {
+            bitmap.push(0);
+        }
         return bitmap;
     }
 
@@ -306,19 +323,17 @@ namespace LedMatrix {
             let byte0 = 0; // Columns 0-7
             let byte1 = 0; // Columns 8-15
             for (let c = 0; c < 8; c++) {
-                const msgCol = startCol + c;
+                let msgCol = startCol + c;
                 if (msgCol >= 0 && msgCol < bitmap.length) {
-                    if (bitmap[msgCol] & (1 << r)) {
-                        byte0 |= (1 << c);
-                    }
+                    let bit = (bitmap[msgCol] >> r) & 1;
+                    byte0 |= (bit << c);
                 }
             }
             for (let c = 8; c < 16; c++) {
-                const msgCol = startCol + c;
+                let msgCol = startCol + c;
                 if (msgCol >= 0 && msgCol < bitmap.length) {
-                    if (bitmap[msgCol] & (1 << r)) {
-                        byte1 |= (1 << (c - 8));
-                    }
+                    let bit = (bitmap[msgCol] >> r) & 1;
+                    byte1 |= (bit << (c - 8));
                 }
             }
             matrixBuffer[2 * r] = byte0;
