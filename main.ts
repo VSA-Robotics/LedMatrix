@@ -173,8 +173,8 @@ namespace LedMatrix {
         if (row < 0 || row >= 8 || col < 0 || col >= 16) {
             return; // Silent fail
         }
-        const hardwareRow = 7 - row; // Flip row bits vertically
-        const hardwareCol = col;     // Direct column mapping
+        const hardwareRow = row; // Direct row mapping
+        const hardwareCol = col; // Direct column mapping
         if (state) {
             matrixBuffer[hardwareCol] |= (1 << hardwareRow);
         } else {
@@ -297,6 +297,10 @@ namespace LedMatrix {
         for (let c = 0; c < 16; c++) {
             let msgCol = startCol + c;
             matrixBuffer[c] = (msgCol >= 0 && msgCol < bitmap.length) ? bitmap[msgCol] : 0;
+            // Debug: Check the first column
+            if (c === 0 && msgCol >= 0 && msgCol < bitmap.length) {
+                console.log("First column data: " + bitmap[msgCol].toString(2));
+            }
         }
         updateDisplay();
     }
