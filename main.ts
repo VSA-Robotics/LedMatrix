@@ -144,7 +144,6 @@ namespace LedMatrix {
         pins.digitalWritePin(dinPin, 1);
         pins.digitalWritePin(sckPin, 1);
         turnOnScreen();
-        // Removed console.log to eliminate the argument error
     }
 
     /**
@@ -159,14 +158,14 @@ namespace LedMatrix {
     //% state.min=0 state.max=1
     export function setLed(row: number, col: number, state: number) {
         if (row < 0 || row >= 8 || col < 0 || col >= 16) {
-            return; // Silent fail to avoid conversion issues
+            return; // Silent fail
         }
-        const hardwareRow = col;
-        const hardwareCol = row;
+        const hardwareRow = row; // Use row as row
+        const hardwareCol = col; // Use col as column
         if (state) {
-            matrixBuffer[hardwareRow] |= (1 << hardwareCol);
+            matrixBuffer[hardwareCol] |= (1 << hardwareRow); // Column index for buffer, row for bit position
         } else {
-            matrixBuffer[hardwareRow] &= ~(1 << hardwareCol);
+            matrixBuffer[hardwareCol] &= ~(1 << hardwareRow);
         }
         updateDisplay();
     }
