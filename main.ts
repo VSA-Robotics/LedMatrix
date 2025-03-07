@@ -203,7 +203,7 @@ namespace LedMatrix {
     }
 
     /**
-     * Scroll text across the LED matrix horizontally.
+     * Scroll text across the LED matrix.
      * @param text The text to scroll (supports A-Z, 0-9, ,, ., ?, !, %).
      * @param speed The delay between frames in milliseconds (50-1000).
      * @param direction The scroll direction (0 for left, 1 for right).
@@ -213,13 +213,13 @@ namespace LedMatrix {
     //% direction.min=0 direction.max=1
     export function scrollText(text: string, speed: number, direction: number) {
         const bitmap = getMessageBitmap(text);
-        if (direction === 0) { // Scroll left (text moves left)
+        if (direction === 0) { // Scroll left
             const maxStartCol = bitmap.length - 16;
             for (let startCol = 0; startCol <= maxStartCol; startCol++) {
                 displayMessage(bitmap, startCol);
                 basic.pause(speed);
             }
-        } else if (direction === 1) { // Scroll right (text moves right)
+        } else if (direction === 1) { // Scroll right
             const minStartCol = -16;
             for (let startCol = bitmap.length - 16; startCol >= minStartCol; startCol--) {
                 displayMessage(bitmap, startCol);
@@ -283,37 +283,21 @@ namespace LedMatrix {
     // Helper functions for scrolling text
     function getMessageBitmap(text: string): number[] {
         let bitmap: number[] = [];
-        // Add padding columns at the beginning
-        for (let i = 0; i < 16; i++) {
-            bitmap.push(0);
-        }
+        for (let i = 0; i < 16; i++) bitmap.push(0); // Initial padding
         for (let char of text.toUpperCase()) {
             if (font[char]) {
-                for (let c = 0; c < 5; c++) { // For each column of the character
-                    let columnPattern = 0;
-                    for (let r = 0; r < 5; r++) { // For each row
-                        let bit = (font[char][r] >> (4 - c)) & 1; // Get bit for column c
-                        columnPattern |= (bit << r); // Set bit r in column pattern
-                    }
-                    bitmap.push(columnPattern);
+                for (let col = 0; col < 5; col++) {
+                    bitmap.push(font[char][col] & 0x1F); // Use lower 5 bits, upper 3 bits 0
                 }
             } else {
-                // Undefined character, add blank columns
-                for (let c = 0; c < 5; c++) {
-                    bitmap.push(0);
+                for (let col = 0; col < 5; col++) {
+                    bitmap.push(0); // Undefined characters as spaces
                 }
             }
-            // Add a blank column between characters
-            bitmap.push(0);
+            bitmap.push(0); // Space between characters
         }
-        // Remove the last blank column if text is not empty
-        if (text.length > 0) {
-            bitmap.pop();
-        }
-        // Add padding columns at the end
-        for (let i = 0; i < 16; i++) {
-            bitmap.push(0);
-        }
+        if (text.length > 0) bitmap.pop(); // Remove extra space at end
+        for (let i = 0; i < 16; i++) bitmap.push(0); // Final padding
         return bitmap;
     }
 
@@ -322,17 +306,19 @@ namespace LedMatrix {
             let byte0 = 0; // Columns 0-7
             let byte1 = 0; // Columns 8-15
             for (let c = 0; c < 8; c++) {
-                let msgCol = startCol + c;
+                const msgCol = startCol + c;
                 if (msgCol >= 0 && msgCol < bitmap.length) {
-                    let bit = (bitmap[msgCol] >> r) & 1;
-                    byte0 |= (bit << c);
+                    if (bitmap[msgCol] & (1 << r)) {
+                        byte0 |= (1 << c);
+                    }
                 }
             }
             for (let c = 8; c < 16; c++) {
-                let msgCol = startCol + c;
+                const msgCol = startCol + c;
                 if (msgCol >= 0 && msgCol < bitmap.length) {
-                    let bit = (bitmap[msgCol] >> r) & 1;
-                    byte1 |= (bit << (c - 8));
+                    if (bitmap[msgCol] & (1 << r)) {
+                        byte1 |= (1 << (c - 8));
+                    }
                 }
             }
             matrixBuffer[2 * r] = byte0;
