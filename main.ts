@@ -289,18 +289,17 @@ namespace LedMatrix {
         }
         for (let char of text.toUpperCase()) {
             if (font[char]) {
-                let charBitmap = font[char];
-                for (let col = 0; col < 5; col++) {
-                    let colPattern = 0;
-                    for (let row = 0; row < 5; row++) {
-                        let bit = (charBitmap[row] >> (4 - col)) & 1;
-                        colPattern |= (bit << row); // Place character in rows 0 to 4
+                for (let c = 0; c < 5; c++) { // For each column of the character
+                    let columnPattern = 0;
+                    for (let r = 0; r < 5; r++) { // For each row
+                        let bit = (font[char][r] >> (4 - c)) & 1; // Get bit for column c
+                        columnPattern |= (bit << r); // Set bit r in column pattern
                     }
-                    bitmap.push(colPattern);
+                    bitmap.push(columnPattern);
                 }
             } else {
                 // Undefined character, add blank columns
-                for (let col = 0; col < 5; col++) {
+                for (let c = 0; c < 5; c++) {
                     bitmap.push(0);
                 }
             }
