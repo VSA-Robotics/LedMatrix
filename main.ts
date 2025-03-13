@@ -39,7 +39,7 @@ namespace LedMatrix {
 
     // Font definition for A-Z, 0-9, ?, !, % (5 columns per character, 8 rows high)
     const font: FontMap = {
-        'A': [0x1C, 0x22, 0x22, 0x3E, 0x22],
+        'A': [0x1C, 0x22, 0x3E, 0x22, 0x22],
         'B': [0x3C, 0x22, 0x3C, 0x22, 0x3C],
         'C': [0x1C, 0x22, 0x20, 0x22, 0x1C],
         'D': [0x3C, 0x22, 0x22, 0x22, 0x3C],
@@ -161,8 +161,8 @@ namespace LedMatrix {
                 let bit = (originalPattern >> row) & 1;
                 if (bit) {
                     // Map (row, col) to (newRow, newCol) after 90-degree counterclockwise rotation
-                    let newRow = 4 - col;
-                    let newColIdx = row;
+                    let newRow = 4 - col; // Adjust for 5-column width
+                    let newColIdx = row;  // Keep row as column bit
                     rotated[newRow] |= (1 << newColIdx);
                 }
             }
@@ -188,7 +188,7 @@ namespace LedMatrix {
         pins.digitalWritePin(dinPin, 1);
         pins.digitalWritePin(sckPin, 1);
         turnOnScreen();
-        console.log("LED Matrix initialized with SCK:", sck, "DIN:", din);
+        console.log(`LED Matrix initialized with SCK: ${sck}, DIN: ${din}`); // Fixed argument issue
     }
 
     /**
