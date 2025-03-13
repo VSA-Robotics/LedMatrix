@@ -3,18 +3,25 @@ namespace LedMatrix {
     // =========================================================================
     // GUIDELINES FOR USING LED MATRIX EXTENSION
     // =========================================================================
-    // 1. **Initialization**: Use `initialize LED matrix with SCK %sck and DIN %din`
+    // 1. **Initialization**:
+    //    - Use `initialize LED matrix with SCK %sck and DIN %din`.
     //    - Select micro:bit pins (e.g., P15 for SCK, P16 for DIN).
     //    - Example: `LedMatrix.initialize(DigitalPin.P15, DigitalPin.P16)`
     // 2. **Basic Usage**:
     //    - Clear the display with `clear display`.
     //    - Set LEDs with `set LED at row %row column %col to %state` (0 = off, 1 = on).
     //    - Scroll text with `scroll text %text with speed %speed direction %direction` (speed: 50-1000ms, direction: 0 = left, 1 = right).
-    //    - Draw shapes with `draw line from row %startRow col %startCol to row %endRow col %endCol` or `draw rectangle at x %x y %y width %width height %height state %state`.
-    // 3. **Tips**:
+    //    - Draw shapes with `draw line` or `draw rectangle`.
+    // 3. **Orientation**:
+    //    - This extension assumes an 8x16 LED matrix with 8 rows (0-7) vertically and 16 columns (0-15) horizontally.
+    //    - If letters appear rotated or mirrored:
+    //      - Check your matrix’s wiring (e.g., SCK, DIN, row/column orientation).
+    //      - Adjust the `setLed` mapping or font rotation in `getMessageBitmap` if needed.
+    //      - Use `console.log` to debug (visible in simulator’s console).
+    // 4. **Tips**:
     //    - Use speed 100-300ms for readable text scrolling.
-    //    - Row range: 0-7, Column range: 0-15 (for 8x16 matrix).
-    //    - Ensure your 8x16 LED matrix is wired with 16 columns horizontally and 8 rows vertically.
+    //    - Row range: 0-7, Column range: 0-15.
+    //    - Font supports A-Z, 0-9, ?, !, % (uppercase only).
     // =========================================================================
 
     // Global variables for pins and buffer
@@ -32,7 +39,7 @@ namespace LedMatrix {
 
     // Font definition for A-Z, 0-9, ?, !, % (5 columns per character, 8 rows high)
     const font: FontMap = {
-        'A': [0x1C, 0x22, 0x3E, 0x22, 0x22],
+        'A': [0x1C, 0x22, 0x22, 0x3E, 0x22],
         'B': [0x3C, 0x22, 0x3C, 0x22, 0x3C],
         'C': [0x1C, 0x22, 0x20, 0x22, 0x1C],
         'D': [0x3C, 0x22, 0x22, 0x22, 0x3C],
@@ -49,7 +56,7 @@ namespace LedMatrix {
         'O': [0x1C, 0x22, 0x22, 0x22, 0x1C],
         'P': [0x3C, 0x22, 0x3C, 0x20, 0x20],
         'Q': [0x1C, 0x22, 0x2A, 0x24, 0x1A],
-        'R': [0x3C, 0x22, 0x3C, 0x24, 0x22],
+        'R': [0x3C, 0x22, 0x3C, 0x28, 0x24],
         'S': [0x1E, 0x20, 0x1C, 0x02, 0x3C],
         'T': [0x3E, 0x08, 0x08, 0x08, 0x08],
         'U': [0x22, 0x22, 0x22, 0x22, 0x1C],
@@ -58,9 +65,6 @@ namespace LedMatrix {
         'X': [0x22, 0x14, 0x08, 0x14, 0x22],
         'Y': [0x22, 0x14, 0x08, 0x08, 0x08],
         'Z': [0x3E, 0x04, 0x08, 0x10, 0x3E],
-        '?': [0x1C, 0x22, 0x0C, 0x00, 0x04],
-        '!': [0x08, 0x08, 0x08, 0x00, 0x08],
-        '%': [0x22, 0x14, 0x08, 0x14, 0x22],
         '0': [0x1C, 0x22, 0x22, 0x22, 0x1C],
         '1': [0x08, 0x18, 0x08, 0x08, 0x1C],
         '2': [0x1C, 0x02, 0x1C, 0x20, 0x1E],
@@ -71,6 +75,9 @@ namespace LedMatrix {
         '7': [0x3E, 0x02, 0x04, 0x08, 0x08],
         '8': [0x1C, 0x22, 0x1C, 0x22, 0x1C],
         '9': [0x1C, 0x22, 0x1E, 0x02, 0x1C],
+        '?': [0x1C, 0x22, 0x0C, 0x00, 0x04],
+        '!': [0x08, 0x08, 0x08, 0x00, 0x08],
+        '%': [0x22, 0x14, 0x08, 0x14, 0x22],
         ' ': [0x00, 0x00, 0x00, 0x00, 0x00]
     };
 
@@ -145,17 +152,26 @@ namespace LedMatrix {
         showRows(matrixBuffer);
     }
 
-    // Helper function for font orientation
-    function flipVertical(pattern: number): number {
-        let reversed = 0;
-        for (let i = 0; i < 8; i++) {
-            reversed = (reversed << 1) | (pattern & 1);
-            pattern >>= 1;
+    // Helper function to rotate font patterns 90 degrees counterclockwise
+    function rotate90CounterClockwise(patterns: number[]): number[] {
+        const rotated: number[] = [0, 0, 0, 0, 0]; // 5 columns after rotation
+        for (let col = 0; col < 5; col++) {
+            let originalPattern = patterns[col];
+            for (let row = 0; row < 8; row++) {
+                let bit = (originalPattern >> row) & 1;
+                if (bit) {
+                    // Map (row, col) to (newRow, newCol) after 90-degree counterclockwise rotation
+                    let newRow = 4 - col;
+                    let newColIdx = row;
+                    rotated[newRow] |= (1 << newColIdx);
+                }
+            }
         }
-        return reversed;
+        return rotated;
     }
 
     // Exported block functions
+
     /**
      * Initialize the LED matrix with specified SCK and DIN pins.
      * @param sck The clock pin for the LED matrix (e.g., P15).
@@ -172,6 +188,7 @@ namespace LedMatrix {
         pins.digitalWritePin(dinPin, 1);
         pins.digitalWritePin(sckPin, 1);
         turnOnScreen();
+        console.log("LED Matrix initialized with SCK:", sck, "DIN:", din);
     }
 
     /**
@@ -188,7 +205,7 @@ namespace LedMatrix {
         if (row < 0 || row >= 8 || col < 0 || col >= 16) {
             return; // Silent fail
         }
-        // Correct mapping: row to hardware row, col to hardware column
+        // Corrected mapping: col to hardware column, row to bit position
         if (state) {
             matrixBuffer[col] |= (1 << row);
         } else {
@@ -296,11 +313,11 @@ namespace LedMatrix {
         for (let i = 0; i < 16; i++) bitmap.push(0); // Initial padding
         for (let char of text.toUpperCase()) {
             if (font[char]) {
-                for (let colPattern of font[char]) {
-                    bitmap.push(flipVertical(colPattern)); // Flip vertically to correct orientation
-                }
+                let rotatedPattern = rotate90CounterClockwise(font[char]);
+                bitmap = bitmap.concat(rotatedPattern);
             } else {
-                bitmap = bitmap.concat(font[' ']); // Default to space if undefined
+                let rotatedSpace = rotate90CounterClockwise(font[' ']);
+                bitmap = bitmap.concat(rotatedSpace);
             }
             bitmap.push(0); // Space between characters
         }
@@ -317,3 +334,12 @@ namespace LedMatrix {
         updateDisplay();
     }
 }
+
+// Test code (recommended to place in a separate file like test.ts)
+// LedMatrix.initialize(DigitalPin.P15, DigitalPin.P16);
+// basic.forever(function () {
+//     LedMatrix.clear();
+//     LedMatrix.scrollText("TEST", 150, 0);
+//     basic.pause(2000);
+//     LedMatrix.clear();
+// });
