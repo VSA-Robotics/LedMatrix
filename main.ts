@@ -315,7 +315,7 @@ namespace LedMatrix {
         for (let i = 0; i < 16; i++) bitmap.push(0); // Initial padding (16 columns)
         for (let char of text.toUpperCase()) {
             if (font[char]) {
-                let rotatedPattern = rotate90Clockwise(font[char]); // Rotate for upright in horizontal matrix
+                let rotatedPattern = rotate90Clockwise(font[char]);
                 bitmap = bitmap.concat(rotatedPattern);
             } else {
                 let rotatedSpace = rotate90Clockwise(font[' ']);
@@ -336,29 +336,14 @@ namespace LedMatrix {
         }
 
         // Map the bitmap (logical columns) to hardware columns
-        for (let logicalRow = 0; logicalRow < 8; logicalRow++) {
-            let hardwareCol = logicalRow; // Logical row becomes hardware column
+        for (let hardwareCol = 0; hardwareCol < 16; hardwareCol++) {
             let colData = 0;
-            for (let logicalCol = 0; logicalCol < 16; logicalCol++) {
-                let bitmapIdx = startCol + logicalCol;
-                if (bitmapIdx >= 0 && bitmapIdx < bitmap.length) {
-                    let bit = (bitmap[bitmapIdx] >> logicalRow) & 1;
-                    if (bit) {
-                        colData |= (1 << logicalCol);
-                    }
-                }
+            let bitmapIdx = hardwareCol + startCol;
+            if (bitmapIdx >= 0 && bitmapIdx < bitmap.length) {
+                colData = bitmap[bitmapIdx]; // Directly use the column data
             }
             matrixBuffer[hardwareCol] = colData;
         }
         updateDisplay();
     }
 }
-
-// Test code (recommended to place in a separate file like test.ts)
-// LedMatrix.initialize(DigitalPin.P15, DigitalPin.P16);
-// basic.forever(function () {
-//     LedMatrix.clear();
-//     LedMatrix.scrollText("HELLO", 150, 0); // Scrolls left to right
-//     basic.pause(2000);
-//     LedMatrix.clear();
-// });
