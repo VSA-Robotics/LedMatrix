@@ -5,7 +5,7 @@ namespace LedMatrix {
     // =========================================================================
     // 1. **Orientation**:
     //    - This extension assumes an 8x16 LED matrix with 16 columns (0-15) horizontally (left to right) and 8 rows (0-7) vertically (top to bottom).
-    //    - If letters appear rotated or mirrored:
+    //    - If letters appear rotated or scrolling is incorrect:
     //      - Physically orient the matrix with 16 columns wide and 8 rows tall.
     //      - Check wiring (e.g., SCK, DIN) and adjust `setLed` mapping or font rotation if needed.
     //      - Use `console.log` to debug (visible in simulator’s console).
@@ -29,7 +29,7 @@ namespace LedMatrix {
     let dinPin: DigitalPin;
     let matrixBuffer: number[] = [];
     for (let i = 0; i < 16; i++) {
-        matrixBuffer.push(0); // Initialize 16-column buffer (hardware rows)
+        matrixBuffer.push(0); // Initialize 16-column buffer (hardware columns)
     }
 
     // Define the font type to allow indexing by string
@@ -152,17 +152,17 @@ namespace LedMatrix {
         showRows(matrixBuffer);
     }
 
-    // Helper function to rotate font patterns 90 degrees clockwise
-    function rotate90Clockwise(patterns: number[]): number[] {
+    // Helper function to rotate font patterns 90 degrees counterclockwise
+    function rotate90CounterClockwise(patterns: number[]): number[] {
         const rotated: number[] = [0, 0, 0, 0, 0]; // 5 columns after rotation
         for (let col = 0; col < 5; col++) {
             let originalPattern = patterns[col];
             for (let row = 0; row < 8; row++) {
                 let bit = (originalPattern >> row) & 1;
                 if (bit) {
-                    // Map (row, col) to (newRow, newCol) after 90-degree clockwise rotation
-                    let newRow = col; // Column becomes row
-                    let newColIdx = 7 - row; // Row becomes inverted column
+                    // Map (row, col) to (newRow, newCol) after 90-degree counterclockwise rotation
+                    let newRow = 4 - col; // Adjust for 5-column width
+                    let newColIdx = row;  // Keep row as column bit
                     rotated[newRow] |= (1 << newColIdx);
                 }
             }
@@ -316,10 +316,10 @@ namespace LedMatrix {
         for (let i = 0; i < 16; i++) bitmap.push(0); // Initial padding (16 columns)
         for (let char of text.toUpperCase()) {
             if (font[char]) {
-                let rotatedPattern = rotate90Clockwise(font[char]);
+                let rotatedPattern = rotate90CounterClockwise(font[char]);
                 bitmap = bitmap.concat(rotatedPattern);
             } else {
-                let rotatedSpace = rotate90Clockwise(font[' ']);
+                let rotatedSpace = rotate90CounterClockwise(font[' ']);
                 bitmap = bitmap.concat(rotatedSpace);
             }
             bitmap.push(0); // Space between characters
@@ -354,12 +354,3 @@ namespace LedMatrix {
         updateDisplay();
     }
 }
-
-// Test code (recommended to place in a separate file like test.ts)
-// LedMatrix.initialize(DigitalPin.P15, DigitalPin.P16);
-// basic.forever(function () {
-//     LedMatrix.clear();
-//     LedMatrix.scrollText("HELLO", 150, 0); // Scrolls left to right
-//     basic.pause(2000);
-//     LedMatrix.clear();
-// });
