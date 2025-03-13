@@ -152,17 +152,17 @@ namespace LedMatrix {
         showRows(matrixBuffer);
     }
 
-    // Helper function to rotate font patterns 90 degrees counterclockwise
-    function rotate90CounterClockwise(patterns: number[]): number[] {
+    // Helper function to rotate font patterns 90 degrees clockwise
+    function rotate90Clockwise(patterns: number[]): number[] {
         const rotated: number[] = [0, 0, 0, 0, 0]; // 5 columns after rotation
         for (let col = 0; col < 5; col++) {
             let originalPattern = patterns[col];
             for (let row = 0; row < 8; row++) {
                 let bit = (originalPattern >> row) & 1;
                 if (bit) {
-                    // Map (row, col) to (newRow, newCol) after 90-degree counterclockwise rotation
-                    let newRow = 4 - col; // Adjust for 5-column width
-                    let newColIdx = row;  // Keep row as column bit
+                    // Map (row, col) to (newRow, newCol) after 90-degree clockwise rotation
+                    let newRow = col; // Column becomes row
+                    let newColIdx = 7 - row; // Row becomes inverted column
                     rotated[newRow] |= (1 << newColIdx);
                 }
             }
@@ -205,8 +205,7 @@ namespace LedMatrix {
         if (row < 0 || row >= 8 || col < 0 || col >= 16) {
             return; // Silent fail
         }
-        // Correct mapping for horizontal orientation:
-        // Logical (row, col) maps to hardware (col, row) after transposition
+        // Correct mapping for horizontal orientation (16 columns wide, 8 rows tall)
         let hardwareCol = col; // Logical column becomes hardware column
         let hardwareRow = row; // Logical row becomes hardware row bit
         if (state) {
@@ -241,13 +240,13 @@ namespace LedMatrix {
     //% direction.min=0 direction.max=1
     export function scrollText(text: string, speed: number, direction: number) {
         let bitmap = getMessageBitmap(text);
-        if (direction === 0) { // Scroll left
+        if (direction === 0) { // Scroll left to right
             let maxStartCol = bitmap.length - 16; // Adjusted for 16 columns
             for (let startCol = 0; startCol <= maxStartCol; startCol++) {
                 displayMessage(bitmap, startCol);
                 basic.pause(speed);
             }
-        } else if (direction === 1) { // Scroll right
+        } else if (direction === 1) { // Scroll right to left
             let minStartCol = 0 - 16;
             for (let startCol = bitmap.length - 16; startCol >= minStartCol; startCol--) {
                 displayMessage(bitmap, startCol);
@@ -316,10 +315,10 @@ namespace LedMatrix {
         for (let i = 0; i < 16; i++) bitmap.push(0); // Initial padding (16 columns)
         for (let char of text.toUpperCase()) {
             if (font[char]) {
-                let rotatedPattern = rotate90CounterClockwise(font[char]);
+                let rotatedPattern = rotate90Clockwise(font[char]); // Rotate for upright in horizontal matrix
                 bitmap = bitmap.concat(rotatedPattern);
             } else {
-                let rotatedSpace = rotate90CounterClockwise(font[' ']);
+                let rotatedSpace = rotate90Clockwise(font[' ']);
                 bitmap = bitmap.concat(rotatedSpace);
             }
             bitmap.push(0); // Space between characters
@@ -354,3 +353,12 @@ namespace LedMatrix {
         updateDisplay();
     }
 }
+
+// Test code (recommended to place in a separate file like test.ts)
+// LedMatrix.initialize(DigitalPin.P15, DigitalPin.P16);
+// basic.forever(function () {
+//     LedMatrix.clear();
+//     LedMatrix.scrollText("HELLO", 150, 0); // Scrolls left to right
+//     basic.pause(2000);
+//     LedMatrix.clear();
+// });
