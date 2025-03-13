@@ -7,7 +7,7 @@ namespace LedMatrix {
     //    - This extension assumes an 8x16 LED matrix with 16 columns (0-15) horizontally (left to right) and 8 rows (0-7) vertically (top to bottom).
     //    - If letters appear rotated or scrolling is incorrect:
     //      - Physically orient the matrix with 16 columns wide and 8 rows tall.
-    //      - Check wiring (e.g., SCK, DIN) and adjust `setLed` mapping or font rotation if needed.
+    //      - Check wiring (e.g., SCK, DIN) and adjust `setLed` mapping or font patterns if needed.
     //      - Use `console.log` to debug (visible in simulator’s console).
     // 2. **Initialization**:
     //    - Use `initialize LED matrix with SCK %sck and DIN %din`.
@@ -46,7 +46,7 @@ namespace LedMatrix {
         'E': [0x3E, 0x20, 0x3C, 0x20, 0x3E],
         'F': [0x3E, 0x20, 0x3C, 0x20, 0x20],
         'G': [0x1C, 0x22, 0x20, 0x26, 0x1A],
-        'H': [0x22, 0x22, 0x3E, 0x22, 0x22],
+        'H': [0x55, 0x00, 0x08, 0x00, 0x55], // Manually adjusted for upright "H"
         'I': [0x1C, 0x08, 0x08, 0x08, 0x1C],
         'J': [0x02, 0x02, 0x02, 0x22, 0x1C],
         'K': [0x22, 0x24, 0x38, 0x24, 0x22],
@@ -154,15 +154,14 @@ namespace LedMatrix {
 
     // Helper function to rotate font patterns 90 degrees counterclockwise
     function rotate90CounterClockwise(patterns: number[]): number[] {
-        const rotated: number[] = [0, 0, 0, 0, 0]; // 5 columns after rotation
+        const rotated: number[] = [0, 0, 0, 0, 0];
         for (let col = 0; col < 5; col++) {
             let originalPattern = patterns[col];
             for (let row = 0; row < 8; row++) {
                 let bit = (originalPattern >> row) & 1;
                 if (bit) {
-                    // Map (row, col) to (newRow, newCol) after 90-degree counterclockwise rotation
-                    let newRow = 4 - col; // Adjust for 5-column width
-                    let newColIdx = row;  // Keep row as column bit
+                    let newRow = 4 - col;
+                    let newColIdx = row;
                     rotated[newRow] |= (1 << newColIdx);
                 }
             }
@@ -315,8 +314,14 @@ namespace LedMatrix {
         for (let i = 0; i < 16; i++) bitmap.push(0); // Initial padding (16 columns)
         for (let char of text.toUpperCase()) {
             if (font[char]) {
-                let rotatedPattern = rotate90CounterClockwise(font[char]); // Rotate 90 degrees counterclockwise
-                bitmap = bitmap.concat(rotatedPattern);
+                // Use original pattern for "H" to fix individually
+                if (char === 'H') {
+                    let pattern = font[char]; // Use original pattern without rotation
+                    bitmap = bitmap.concat(pattern);
+                } else {
+                    let rotatedPattern = rotate90CounterClockwise(font[char]); // Apply rotation to other letters
+                    bitmap = bitmap.concat(rotatedPattern);
+                }
             } else {
                 let rotatedSpace = rotate90CounterClockwise(font[' ']);
                 bitmap = bitmap.concat(rotatedSpace);
@@ -345,5 +350,55 @@ namespace LedMatrix {
             matrixBuffer[hardwareCol] = colData;
         }
         updateDisplay();
+    }
+
+    // Rotation functions for testing
+    function rotate90CounterClockwise(patterns: number[]): number[] {
+        const rotated: number[] = [0, 0, 0, 0, 0];
+        for (let col = 0; col < 5; col++) {
+            let originalPattern = patterns[col];
+            for (let row = 0; row < 8; row++) {
+                let bit = (originalPattern >> row) & 1;
+                if (bit) {
+                    let newRow = 4 - col;
+                    let newColIdx = row;
+                    rotated[newRow] |= (1 << newColIdx);
+                }
+            }
+        }
+        return rotated;
+    }
+
+    function rotate90Clockwise(patterns: number[]): number[] {
+        const rotated: number[] = [0, 0, 0, 0, 0];
+        for (let col = 0; col < 5; col++) {
+            let originalPattern = patterns[col];
+            for (let row = 0; row < 8; row++) {
+                let bit = (originalPattern >> row) & 1;
+                if (bit) {
+                    let newRow = col;
+                    let newColIdx = 7 - row;
+                    rotated[newRow] |= (1 << newColIdx);
+                }
+            }
+        }
+        return rotated;
+    }
+
+    function rotate180(patterns: number[]): number[] {
+        const rotated: number[] = [0, 0, 0, 0, 0];
+        for (let col = 0; col < 5; col++) {
+            let originalPattern = patterns[4 - col];
+            let newPattern = 0;
+            for (let row = 0; row < 8; row++) {
+                let bit = (originalPattern >> row) & 1;
+                if (bit) {
+                    let newRow = 7 - row;
+                    newPattern |= (1 << newRow);
+                }
+            }
+            rotated[col] = newPattern;
+        }
+        return rotated;
     }
 }
