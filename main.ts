@@ -152,21 +152,20 @@ namespace LedMatrix {
         showRows(matrixBuffer);
     }
 
-    // Helper function to rotate font patterns 180 degrees
-    // This effectively rotates the letter 180 degrees from its original orientation
-    function rotate180(patterns: number[]): number[] {
+    // Helper function to rotate font patterns 90 degrees clockwise
+    function rotate90Clockwise(patterns: number[]): number[] {
         const rotated: number[] = [0, 0, 0, 0, 0]; // 5 columns after rotation
         for (let col = 0; col < 5; col++) {
-            let originalPattern = patterns[4 - col]; // Reverse columns
-            let newPattern = 0;
+            let originalPattern = patterns[col];
             for (let row = 0; row < 8; row++) {
                 let bit = (originalPattern >> row) & 1;
                 if (bit) {
-                    let newRow = 7 - row; // Reverse rows
-                    newPattern |= (1 << newRow);
+                    // Map (row, col) to (newRow, newCol) after 90-degree clockwise rotation
+                    let newRow = col; // Column becomes row
+                    let newColIdx = 7 - row; // Row becomes inverted column
+                    rotated[newRow] |= (1 << newColIdx);
                 }
             }
-            rotated[col] = newPattern;
         }
         return rotated;
     }
@@ -316,10 +315,10 @@ namespace LedMatrix {
         for (let i = 0; i < 16; i++) bitmap.push(0); // Initial padding (16 columns)
         for (let char of text.toUpperCase()) {
             if (font[char]) {
-                let rotatedPattern = rotate180(font[char]); // Rotate 180 degrees
+                let rotatedPattern = rotate90Clockwise(font[char]); // Rotate 90 degrees clockwise
                 bitmap = bitmap.concat(rotatedPattern);
             } else {
-                let rotatedSpace = rotate180(font[' ']);
+                let rotatedSpace = rotate90Clockwise(font[' ']);
                 bitmap = bitmap.concat(rotatedSpace);
             }
             bitmap.push(0); // Space between characters
@@ -348,12 +347,3 @@ namespace LedMatrix {
         updateDisplay();
     }
 }
-
-// Test code (recommended to place in a separate file like test.ts)
-// LedMatrix.initialize(DigitalPin.P15, DigitalPin.P16);
-// basic.forever(function () {
-//     LedMatrix.clear();
-//     LedMatrix.scrollText("HELLO", 150, 0); // Scrolls left to right
-//     basic.pause(2000);
-//     LedMatrix.clear();
-// });
