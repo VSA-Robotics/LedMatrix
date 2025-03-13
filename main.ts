@@ -152,17 +152,17 @@ namespace LedMatrix {
         showRows(matrixBuffer);
     }
 
-    // Helper function to rotate font patterns 90 degrees clockwise
-    function rotate90Clockwise(patterns: number[]): number[] {
+    // Helper function to rotate font patterns 90 degrees counterclockwise
+    function rotate90CounterClockwise(patterns: number[]): number[] {
         const rotated: number[] = [0, 0, 0, 0, 0]; // 5 columns after rotation
         for (let col = 0; col < 5; col++) {
             let originalPattern = patterns[col];
             for (let row = 0; row < 8; row++) {
                 let bit = (originalPattern >> row) & 1;
                 if (bit) {
-                    // Map (row, col) to (newRow, newCol) after 90-degree clockwise rotation
-                    let newRow = col; // Column becomes row
-                    let newColIdx = 7 - row; // Row becomes inverted column
+                    // Map (row, col) to (newRow, newCol) after 90-degree counterclockwise rotation
+                    let newRow = 4 - col; // Adjust for 5-column width
+                    let newColIdx = row;  // Keep row as column bit
                     rotated[newRow] |= (1 << newColIdx);
                 }
             }
@@ -315,10 +315,10 @@ namespace LedMatrix {
         for (let i = 0; i < 16; i++) bitmap.push(0); // Initial padding (16 columns)
         for (let char of text.toUpperCase()) {
             if (font[char]) {
-                let rotatedPattern = rotate90Clockwise(font[char]); // Rotate 90 degrees clockwise
+                let rotatedPattern = rotate90CounterClockwise(font[char]); // Rotate 90 degrees counterclockwise
                 bitmap = bitmap.concat(rotatedPattern);
             } else {
-                let rotatedSpace = rotate90Clockwise(font[' ']);
+                let rotatedSpace = rotate90CounterClockwise(font[' ']);
                 bitmap = bitmap.concat(rotatedSpace);
             }
             bitmap.push(0); // Space between characters
