@@ -46,7 +46,7 @@ namespace LedMatrix {
         'E': [0x15, 0x10, 0x15, 0x10, 0x15],
         'F': [0x3E, 0x20, 0x3C, 0x20, 0x20],
         'G': [0x1C, 0x22, 0x20, 0x26, 0x1A],
-        'H': [0x1E, 0x08, 0x08, 0x08, 0x1E], // Correct array for desired pattern
+        'H': [0x3C, 0x10, 0x10, 0x10, 0x3C], // Updated to use full 8 rows
         'I': [0x1C, 0x08, 0x08, 0x08, 0x1C],
         'J': [0x02, 0x02, 0x02, 0x22, 0x1C],
         'K': [0x22, 0x24, 0x38, 0x24, 0x22],
@@ -186,8 +186,7 @@ namespace LedMatrix {
     export function setLed(row: number, col: number, state: number) {
         if (row < 0 || row >= 8 || col < 0 || col >= 16) return;
         let hardwareCol = col; // Logical column becomes hardware column
-        // Shift row up by 2 to compensate for downward display shift
-        let hardwareRow = (row + 2) % 8; // Ensure wrap-around (modulo 8)
+        let hardwareRow = row; // Direct mapping, no shift
         if (state) {
             matrixBuffer[hardwareCol] |= (1 << hardwareRow);
         } else {
