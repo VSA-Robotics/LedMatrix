@@ -1,6 +1,6 @@
 {
     "name": "ledmatrix",
-    "version": "0.0.91",
+    "version": "0.0.92",
     "description": "A driver for an 8x16 LED matrix on the micro:bit",
     "license": "MIT",
     "dependencies": {
