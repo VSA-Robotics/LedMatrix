@@ -1,139 +1,108 @@
-# LED Matrix Extension for micro:bit
+# LED Matrix Extension for micro:bit (v1.0.0)
 
-Welcome to the LED Matrix Extension for micro:bit! This extension allows you to control an **8x16 LED matrix** using a micro:bit. You can light up individual LEDs, scroll text across the display, and draw simple shapes like lines and rectangles—all with easy-to-use functions designed for the MakeCode editor.
-
-Whether you're building a scrolling message board, creating pixel art, or experimenting with animations, this extension has you covered.
+## Introduction
+This micro:bit extension provides a simple interface for controlling an **8x16 LED Matrix** using two digital pins (SCK and DIN). It allows users to **set individual LEDs, draw shapes, and scroll text** with customizable speed and direction.
 
 ## Features
-- Control an 8x16 LED matrix via two pins (SCK and DIN).
-- Turn individual LEDs on or off.
-- Scroll text in either direction with adjustable speed.
-- Draw lines and rectangles directly on the matrix.
-- Clear the display with a single command.
+- **Easy Initialization**: Configure SCK and DIN pins for communication.
+- **Set Individual LEDs**: Control each LED on the matrix by specifying row and column.
+- **Clear Display**: Quickly turn off all LEDs.
+- **Scroll Text**: Display messages with adjustable speed and direction.
+- **Draw Shapes**: Create lines and rectangles for visual effects.
 
 ## Installation
+1. Open [Microsoft MakeCode for micro:bit](https://makecode.microbit.org/).
+2. Click on **Extensions** in the Advanced section.
+3. Search for `LED Matrix` and select this extension.
+4. Add it to your project.
 
-To use this extension in your micro:bit project, follow these steps:
+## Pin Configuration
+This extension requires two digital pins to communicate with the LED matrix:
+- **SCK (Clock Pin)**: Controls data timing.
+- **DIN (Data Input Pin)**: Sends LED state information.
 
-1. Open the [MakeCode editor](https://makecode.microbit.org/) in your browser.
-2. Click on the **"Extensions"** option in the block menu.
-3. In the search bar, enter the URL of this repository (e.g., `https://github.com/VSA-Robotics/LedMatrix`).
-4. Click **"Add to Project"** to install the extension into your MakeCode environment.
-
-### Manual Installation (Optional)
-If the extension isn’t available via search, you can manually add it:
-- Copy the extension’s source code from the repository.
-- Paste it into a new file in your project under the **"Explorer"** tab in MakeCode.
-
-Once installed, the extension’s blocks will appear in the MakeCode toolbox, ready for use.
-
-## Usage
-
-This section explains how to use the extension’s core functions. All examples are written in TypeScript, but you can also use the equivalent blocks in the MakeCode editor.
-
-### Initialization
-Before using the LED matrix, you must initialize it by specifying the pins connected to **SCK (clock)** and **DIN (data input)** on your micro:bit. For example:
-
-```typescript
+Example Pin Setup:
+```javascript
 LedMatrix.initialize(DigitalPin.P15, DigitalPin.P16);
 ```
+This initializes the LED matrix using **P15 for SCK** and **P16 for DIN**.
 
-- `DigitalPin.P15`: SCK pin (adjust based on your wiring).
-- `DigitalPin.P16`: DIN pin (adjust based on your wiring).
+## Blocks and Functions
+### 1. Initialize the LED Matrix
+```javascript
+LedMatrix.initialize(DigitalPin.P15, DigitalPin.P16);
+```
+- Call this function before using other blocks.
+- Adjust `P15` and `P16` to your wiring setup.
 
-Run this command once at the start of your program to set up the matrix.
+### 2. Set Individual LED
+```javascript
+LedMatrix.setLed(row, col, state);
+```
+- **row**: LED row (0-7, top to bottom).
+- **col**: LED column (0-15, left to right).
+- **state**: `1` (on) or `0` (off).
 
-### Setting Individual LEDs
-To turn an LED on or off, use the `setLed` function. You’ll need to specify the row (0-7), column (0-15), and state (0 for off, 1 for on):
-
-```typescript
-LedMatrix.setLed(2, 3, 1); // Turns on the LED at row 2, column 3
-LedMatrix.setLed(2, 3, 0); // Turns it off
+Example:
+```javascript
+LedMatrix.setLed(2, 5, 1); // Turns on LED at row 2, column 5.
 ```
 
-### Clearing the Display
-To turn off all LEDs and reset the matrix to a blank state, use:
-
-```typescript
+### 3. Clear Display
+```javascript
 LedMatrix.clear();
 ```
+- Turns off all LEDs on the matrix.
 
-### Scrolling Text
-Display scrolling text with the `scrollText` function. You can customize the message, speed, and direction:
+### 4. Scroll Text
+```javascript
+LedMatrix.scrollText("HELLO", 100, 0);
+```
+- **text**: String to display (supports A-Z, 0-9, ?, !).
+- **speed**: Scroll speed in milliseconds (50-1000 ms recommended).
+- **direction**: `0` (left to right) or `1` (right to left).
 
-```typescript
-LedMatrix.scrollText("HELLO", 200, 0); // Scrolls "HELLO" from right to left at 200ms per frame
+### 5. Draw a Rectangle
+```javascript
+LedMatrix.drawRectangle(x, y, width, height, state);
+```
+- **x, y**: Starting position.
+- **width, height**: Dimensions of the rectangle.
+- **state**: `1` (on) or `0` (off).
+
+Example:
+```javascript
+LedMatrix.drawRectangle(3, 2, 5, 4, 1); // Draws a 5x4 rectangle at (3,2).
 ```
 
-- **Text**: The message to display (e.g., `"HELLO"`).
-- **Speed**: Delay between frames in milliseconds (e.g., `200` for a moderate pace).
-- **Direction**: `0` for left, `1` for right.
+### 6. Draw a Line
+```javascript
+LedMatrix.drawLine(startRow, startCol, endRow, endCol);
+```
+- Draws a **horizontal or vertical** line between two points.
 
-### Drawing Shapes
-The extension includes functions to draw basic shapes on the matrix.
-
-#### Draw a Line
-Use `drawLine` to create horizontal or vertical lines by specifying the start and end coordinates:
-
-```typescript
-LedMatrix.drawLine(0, 0, 0, 15); // Draws a horizontal line across the top row
-LedMatrix.drawLine(0, 5, 7, 5);  // Draws a vertical line in column 5
+Example:
+```javascript
+LedMatrix.drawLine(0, 0, 0, 7); // Horizontal line across row 0.
 ```
 
-- Parameters: `startRow`, `startCol`, `endRow`, `endCol`.
+## Best Practices & Tips
+- Ensure the LED matrix is **physically oriented** with **16 columns wide and 8 rows tall**.
+- **Row Range:** `0-7` (top to bottom), **Column Range:** `0-15` (left to right).
+- **Recommended scroll speeds:** `100-300ms` for readability.
+- If characters appear **rotated**, check your wiring and ensure correct SCK/DIN pin mapping.
 
-#### Draw a Rectangle
-Use `drawRectangle` to draw a rectangle by defining its position, size, and state:
+## Version History
+### v1.0.0 (Initial Release)
+- Core functions for LED control, text scrolling, and shape drawing implemented.
+- Optimized for MakeCode micro:bit environment.
 
-```typescript
-LedMatrix.drawRectangle(2, 2, 4, 4, 1); // Draws a 4x4 rectangle starting at column 2, row 2
-```
+## License
+This project is licensed under the MIT License - feel free to modify and distribute!
 
-- Parameters: `x` (start column), `y` (start row), `width`, `height`, `state` (1 for on, 0 for off).
+## Support
+If you encounter any issues, check the [GitHub repository](https://github.com/your-repo-link) or open an issue for assistance.
 
-## Examples
+---
+Enjoy using your LED Matrix with micro:bit! 🚀
 
-Here are some practical examples to help you get started.
-
-### Example 1: Turn On a Single LED
-```typescript
-LedMatrix.initialize(DigitalPin.P15, DigitalPin.P16);
-LedMatrix.setLed(0, 0, 1); // Lights up the top-left LED
-```
-
-### Example 2: Scroll a Message
-```typescript
-LedMatrix.initialize(DigitalPin.P15, DigitalPin.P16);
-LedMatrix.scrollText("MICROBIT", 150, 0); // Scrolls "MICROBIT" left at 150ms per frame
-```
-
-### Example 3: Draw a Border
-```typescript
-LedMatrix.initialize(DigitalPin.P15, DigitalPin.P16);
-LedMatrix.drawRectangle(0, 0, 16, 8, 1); // Draws a full-screen border (all LEDs on)
-LedMatrix.drawRectangle(1, 1, 14, 6, 0); // Clears the inner area, leaving a border
-```
-
-### Example 4: Animate a Line
-```typescript
-LedMatrix.initialize(DigitalPin.P15, DigitalPin.P16);
-for (let col = 0; col < 16; col++) {
-    LedMatrix.clear();
-    LedMatrix.drawLine(0, col, 7, col); // Draws a vertical line moving across the matrix
-    basic.pause(100); // Wait 100ms between frames
-}
-```
-
-## Troubleshooting
-
-If you run into issues, try these solutions:
-
-- **No display output**: 
-  - Double-check that the matrix is powered (e.g., 5V or 3.3V, depending on your model).
-  - Verify that the SCK and DIN pins match your wiring in the `initialize` function.
-- **Text is upside down or mirrored**: 
-  - Some matrices have different orientations. You may need to adjust the extension’s code (e.g., add a `flipVertical` function) or rotate your physical matrix.
-- **LEDs light up in the wrong positions**: 
-  - Ensure your row and column indices are correct (rows: 0-7, columns: 0-15).
-- **Scrolling is too fast/slow**: 
-  - Adjust the speed parameter in `scrollText` (higher values slow it down).
