@@ -61,7 +61,8 @@ LedMatrix.scrollText("HELLO", 100, 0);
 ```javascript
 LedMatrix.initialize(DigitalPin.P15, DigitalPin.P16);
 basic.forever(function () {
-    LedMatrix.scrollText("WELCOME", 150, 1);
+    LedMatrix.clear();
+    LedMatrix.scrollText("HELLO", 100, 0);
 });
 ```
 
