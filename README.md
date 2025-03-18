@@ -11,10 +11,10 @@ This micro:bit extension provides a simple interface for controlling an **8x16 L
 - **Draw Shapes**: Create lines and rectangles for visual effects.
 
 ## Installation
-1. Open [Microsoft MakeCode for micro:bit](https://makecode.microbit.org/).
-2. Click on **Extensions** in the Advanced section.
-3. Search for `LED Matrix` and select this extension.
-4. Add it to your project.
+1. Open the [MakeCode editor](https://makecode.microbit.org/) in your browser.
+2. Click on the **"Extensions"** option in the block menu.
+3. In the search bar, enter the URL of this repository (e.g., `https://github.com/VSA-Robotics/LedMatrix`).
+4. Click **"Add to Project"** to install the extension into your MakeCode environment.
 
 ## Pin Configuration
 This extension requires two digital pins to communicate with the LED matrix:
@@ -105,4 +105,3 @@ If you encounter any issues, check the [GitHub repository](https://github.com/yo
 
 ---
 Enjoy using your LED Matrix with micro:bit! 🚀
-
