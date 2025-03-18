@@ -62,6 +62,16 @@ LedMatrix.scrollText("HELLO", 100, 0);
 - **speed**: Scroll speed in milliseconds (50-1000 ms recommended).
 - **direction**: `0` (left to right) or `1` (right to left).
 
+### Example: Scrolling Text Animation
+This example continuously scrolls "WELCOME" from right to left:
+```javascript
+LedMatrix.initialize(DigitalPin.P15, DigitalPin.P16);
+
+basic.forever(function () {
+    LedMatrix.scrollText("WELCOME", 150, 1);
+});
+```
+
 ### 5. Draw a Rectangle
 ```javascript
 LedMatrix.drawRectangle(x, y, width, height, state);
@@ -86,6 +96,41 @@ Example:
 LedMatrix.drawLine(0, 0, 0, 7); // Horizontal line across row 0.
 ```
 
+### 7. Example: Animated Pattern
+This example creates a simple animated pattern on the LED matrix:
+```javascript
+LedMatrix.initialize(DigitalPin.P15, DigitalPin.P16);
+
+basic.forever(function () {
+    for (let i = 0; i < 8; i++) {
+        for (let j = 0; j < 16; j++) {
+            LedMatrix.setLed(i, j, (i + j) % 2);
+        }
+    }
+    basic.pause(500);
+    LedMatrix.clear();
+    basic.pause(500);
+});
+```
+This pattern toggles alternating LEDs every 500ms.
+
+### 8. Example: Running Light Effect
+This example makes an LED "run" across the matrix:
+```javascript
+LedMatrix.initialize(DigitalPin.P15, DigitalPin.P16);
+let col = 0;
+
+basic.forever(function () {
+    LedMatrix.clear();
+    for (let row = 0; row < 8; row++) {
+        LedMatrix.setLed(row, col, 1);
+    }
+    col = (col + 1) % 16;
+    basic.pause(200);
+});
+```
+This continuously moves a column of lights from left to right.
+
 ## Best Practices & Tips
 - Ensure the LED matrix is **physically oriented** with **16 columns wide and 8 rows tall**.
 - **Row Range:** `0-7` (top to bottom), **Column Range:** `0-15` (left to right).
@@ -105,3 +150,4 @@ If you encounter any issues, check the [GitHub repository](https://github.com/yo
 
 ---
 Enjoy using your LED Matrix with micro:bit! 🚀
+
