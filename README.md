@@ -123,9 +123,6 @@ basic.forever(function () {
 ## License
 This project is licensed under the MIT License - feel free to modify and distribute!
 
-## Support
-If you encounter any issues, check the [GitHub repository](https://github.com/your-repo-link) or open an issue for assistance.
-
 ---
 Enjoy using your LED Matrix with micro:bit! 🚀
 
